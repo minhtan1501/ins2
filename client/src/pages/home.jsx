@@ -8,7 +8,7 @@ export default function Home() {
   const { homePosts } = useSelector((state) => state);
 
   return (
-    <div className="bg-white dark:bg-primary min-h-screen">
+    <div className="bg-white dark:bg-primary min-h-screen mt-12">
       <Container>
         <div className="grid grid-cols-12 flex-1">
           <div className="col-span-8 lg:ml-0 ml-4">

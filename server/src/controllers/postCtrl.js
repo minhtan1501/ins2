@@ -1,6 +1,6 @@
 const Posts = require("../models/postModel");
 const { sendError } = require("../utils/helper");
-
+const cloudinary = require('../cloud');
 const postCtrl = {
   createPost: async (req, res) => {
     const { content, images } = req.body;
@@ -25,8 +25,17 @@ const postCtrl = {
     }).populate("user likes", "avatar userName fullName");
 
 
-    res.json({ msg: "Thành công!", result: posts.length, posts });
+    res.status(200).json({ msg: "Thành công!", result: posts.length, posts });
   },
+  uploadImg: async (req, res) => {
+    const {file} = req;
+
+    if(!file) return sendError(res,'Hình ảnh rỗng');
+
+  const {public_id,url} = await  cloudinary.uploader.upload(file.path,{height: 500,width:500,folder: 'instagram-clone'})
+
+    res.status(200).json({public_id,url})
+  }
 };
 
 module.exports = postCtrl;

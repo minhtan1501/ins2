@@ -1,17 +1,17 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AiFillCamera, AiOutlineClose } from "react-icons/ai";
-import * as yup from "yup";
 import { BsFillImageFill, BsTrash } from "react-icons/bs";
+import { useDispatch, useSelector } from "react-redux";
+import * as yup from "yup";
+import { postDataApi } from "../../api/userApi";
+import useNotify from "../../hooks/useNotify";
+import postSlide from "../../redux/slice/postSlide";
+import { imageUploadPost } from "../../utils/imageUpload";
 import TextareaFiled from "../formFiled/TextareaFiled";
 import SubmitBtn from "../SubmitBtn";
 import ModalContainer from "./ModalContainer";
-import useNotify from "../../hooks/useNotify";
-import { useRef, useState } from "react";
-import { imageUpload } from "../../utils/imageUpload";
-import { postDataApi } from "../../api/userApi";
-import { useDispatch, useSelector } from "react-redux";
-import postSlide from "../../redux/slice/postSlide";
 export default function StatusModal({ onClose, visible }) {
   const [images, setImages] = useState([]);
   const [stream, setStream] = useState(false);
@@ -98,7 +98,7 @@ export default function StatusModal({ onClose, visible }) {
     try {
       if (!images.length) return setNotify("error", "Vui lòng thêm ảnh");
       setLoading(true);
-      const media = await imageUpload(images);
+      const media = await imageUploadPost(images);
       const res = await postDataApi(
         "/posts",
         { ...e, images: media },
@@ -177,7 +177,7 @@ export default function StatusModal({ onClose, visible }) {
                 muted
               />
               <span
-                className="absolute top-0 right-0 dark:text-yellow-500 text-sky-500 text-xl font-bold"
+                className="absolute top-0 right-0 dark:text-yellow-500 text-sky-500 text-xl font-bold cursor-pointer"
                 onClick={handleStopStream}
               >
                 &times;

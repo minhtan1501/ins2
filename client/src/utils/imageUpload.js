@@ -1,12 +1,18 @@
+// import cloudinary from "../cloud";
+
+import { postDataApi } from "../api/userApi";
+
 export const imageUpload = async (images) => {
   let imgArr = [];
   for (const item of images) {
     const formData = new FormData();
     if(item.camera) {
     formData.append("file", item.camera);
-      
     }
-    formData.append("file", item);
+    else{
+      formData.append("file", item);
+
+    }
 
     formData.append("upload_preset", "h3rodh6h");
     formData.append("cloud_name", "dtvwgsmrq");
@@ -24,3 +30,25 @@ export const imageUpload = async (images) => {
   }
   return imgArr;
 };
+
+export const imageUploadPost = async (images) => {
+  let imgArr = [];
+  for (const item of images) {
+    const formData = new FormData();
+    if(item.camera) {
+    formData.append("file", item.camera);
+      
+    }
+    formData.append("file", item);
+
+    formData.append("upload_preset", "h3rodh6h");
+    formData.append("cloud_name", "dtvwgsmrq");
+
+    const res= await postDataApi('/posts/upload-img',formData);
+    const {public_id,url} = res.data
+    imgArr.push({ public_id,url });
+  }
+  return imgArr;
+};
+
+// console.log(cloudinary)
