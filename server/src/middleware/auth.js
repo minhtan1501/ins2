@@ -5,7 +5,6 @@ const { sendError } = require("../utils/helper");
 exports.auth = async (req, res, next) => {
   try {
     const token = req.header("Authorization");
-
     if (!token) return sendError(res, "Vui lòng đăng nhập!");
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN);

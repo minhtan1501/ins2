@@ -13,11 +13,12 @@ export default function Carousel({ images }) {
       slidesPerView={1}
       navigation
       pagination={{ clickable: true }}
+      simulateTouch={false}
     >
       {images?.map((image, index) => {
         return (
           <SwiperSlide key={index}>
-            <img className='w-full h-full ' src={image.url} alt=" "/>
+            <img className='w-full h-full ' src={image?.url} alt=" "/>
           </SwiperSlide>
         );
       })}

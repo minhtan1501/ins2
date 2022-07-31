@@ -10,7 +10,7 @@ export default function Dropdown({ options = [] }) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="mx-2 text-2xl dark:text-dark-subtle text-light-subtle">
+        <Menu.Button className="mx-2 text-2xl dark:text-dark-subtle text-light-subtle hover:opacity-60">
           ...
         </Menu.Button>
       </div>
@@ -26,14 +26,15 @@ export default function Dropdown({ options = [] }) {
       >
         <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-primary drop-shadow ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1">
-            {options.map(({ title, Icon }, index) => {
+            {options.map(({ title, Icon, onClick = null }, index) => {
               return (
                 <Menu.Item
                   key={index}
                 >
                   {({ active }) => (
                     <div
-                      className={classNames("flex items-center space-x-2",
+                    onClick={onClick}
+                      className={classNames("flex items-center space-x-2 cursor-pointer",
                         active
                           ? "dark:bg-secondary dark:text-dark-subtle bg-gray-100 text-light-subtle"
                           : "text-black dark:text-white",

@@ -1,4 +1,5 @@
-import { getDataApi } from "../../api/userApi";
+import { getDataApi, patchDataApi } from "../../api/userApi";
+import useNotify from "../../hooks/useNotify";
 
 const { createSlice, createAsyncThunk } = require("@reduxjs/toolkit");
 
@@ -14,6 +15,39 @@ export const getPosts = createAsyncThunk(
   }
 );
 
+export const likePost = createAsyncThunk(
+  "likePost",
+  async ({ auth, post }, { rejectWithValue }) => {
+    try {
+      const newPost = { ...post, likes: [...post.likes, auth.profile] };
+      const res = await patchDataApi(`posts/${post._id}/like`, {}, auth.token);
+      return newPost;
+    } catch (error) {
+      throw new Error(error.response?.data?.msg)
+    }
+  }
+);
+
+export const unLikePost = createAsyncThunk(
+  "unLikePost",
+  async ({ auth, post }, { rejectWithValue }) => {
+    try {
+      const newLikes = post.likes?.filter(
+        (like) => like._id !== auth.profile._id
+      );
+      const newPost = { ...post, likes: [...newLikes] };
+      const res = await patchDataApi(
+        `posts/${post._id}/unlike`,
+        {},
+        auth.token
+      );
+      return newPost;
+    } catch (error) {
+      throw new Error(error.response?.data?.msg)
+    }
+  }
+);
+
 const postSlide = createSlice({
   name: "homePosts",
   initialState: {
@@ -25,7 +59,17 @@ const postSlide = createSlice({
   reducers: {
     createPost(state, action) {
       const oldState = state.posts;
-      state.posts = [...oldState, action.payload];
+      state.posts = [action.payload, ...oldState];
+    },
+    updatePost(state, action) {
+      const oldState = state.posts;
+      const newState = oldState.map((a) => {
+        if (action.payload._id === a._id) {
+          return action.payload;
+        }
+        return a;
+      });
+      state.posts = newState;
     },
   },
   extraReducers: {
@@ -41,6 +85,26 @@ const postSlide = createSlice({
     },
     [getPosts.rejected]: (state, action) => {
       state.loading = false;
+    },
+    [likePost.fulfilled]: (state, action) => {
+      const oldState = state.posts;
+      const newState = oldState.map((a) => {
+        if (action.payload._id === a._id) {
+          return action.payload;
+        }
+        return a;
+      });
+      state.posts = newState;
+    },
+    [unLikePost.fulfilled]: (state, action) => {
+      const oldState = state.posts;
+      const newState = oldState.map((a) => {
+        if (action.payload._id === a._id) {
+          return action.payload;
+        }
+        return a;
+      });
+      state.posts = newState;
     },
   },
 });

@@ -14,10 +14,15 @@ import SubmitBtn from "../SubmitBtn";
 import { imageUpload } from "../../utils/imageUpload";
 import { patchDataApi } from "../../api/userApi";
 import userSlice from "../../redux/slice/userSlice";
-export default function EditProfileModal({ visible, onClose, user,onSuccess }) {
+export default function EditProfileModal({
+  visible,
+  onClose,
+  user,
+  onSuccess,
+}) {
   const [avatar, setAvatar] = useState("");
   const { setNotify, setLoading } = useNotify();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const auth = useSelector((state) => state.user);
   const schema = yup.object().shape({
     fullName: yup
@@ -31,11 +36,11 @@ export default function EditProfileModal({ visible, onClose, user,onSuccess }) {
     avatar: yup
       .mixed()
       .test("fileSize", "File quá lớn", (value) => {
-          if(!value.length) return true
+        if (!value.length) return true;
         return value[0]?.size <= 1024 * 1024;
       })
       .test("fileType", "Ảnh không đúng định dạng", (value) => {
-        if(!value.length) return true
+        if (!value.length) return true;
         return (
           value[0]?.type !== "image/jpeg" || value[0]?.type !== "image/png"
         );
@@ -66,10 +71,9 @@ export default function EditProfileModal({ visible, onClose, user,onSuccess }) {
   useEffect(() => {
     if (errors["avatar"]) {
       setNotify("error", errors.avatar?.message);
-      setAvatar('')
+      setAvatar("");
     }
-  }, [errors['avatar']]);
-
+  }, [errors["avatar"]]);
 
   useEffect(() => {
     if (!visible) return reset();
@@ -97,11 +101,11 @@ export default function EditProfileModal({ visible, onClose, user,onSuccess }) {
         },
         auth?.token
       );
-      onSuccess && onSuccess({...res.data.result})
-      dispatch(userSlice.actions.updateProfile({profile: res.data.result}))
-      setNotify('success',res.data?.msg);
-      setLoading(false); 
-      onClose()
+      onSuccess && onSuccess({ ...res.data.result });
+      dispatch(userSlice.actions.updateProfile({ profile: res.data.result }));
+      setNotify("success", res.data?.msg);
+      setLoading(false);
+      onClose();
     } catch (e) {}
   };
   if (!visible) return null;
@@ -113,7 +117,6 @@ export default function EditProfileModal({ visible, onClose, user,onSuccess }) {
             <img
               className="w-full h-full block object-cover"
               src={
-
                 avatar ? URL.createObjectURL(avatar) : auth.profile.avatar?.url
               }
               alt="avatar"
@@ -123,7 +126,7 @@ export default function EditProfileModal({ visible, onClose, user,onSuccess }) {
               <p>Thay đổi</p>
               <input
                 onChange={handleChangeAvatar}
-                className="absolute top-0 left-0 w-full h-full cursor-point opacity-0"
+                className="absolute top-0 left-0 w-full h-full cursor-point opacity-0 cursor-pointer"
                 type="file"
                 name="avatar"
                 id="file_up"

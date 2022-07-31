@@ -1,24 +1,26 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AiFillCamera, AiOutlineClose } from "react-icons/ai";
 import { BsFillImageFill, BsTrash } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
-import { postDataApi } from "../../api/userApi";
+import { patchDataApi, postDataApi } from "../../api/userApi";
 import useNotify from "../../hooks/useNotify";
 import postSlide from "../../redux/slice/postSlide";
 import { imageUploadPost } from "../../utils/imageUpload";
 import TextareaFiled from "../formFiled/TextareaFiled";
 import SubmitBtn from "../SubmitBtn";
 import ModalContainer from "./ModalContainer";
-export default function StatusModal({ onClose, visible }) {
+export default function StatusModal({ onClose, visible, post = {} }) {
   const [images, setImages] = useState([]);
   const [stream, setStream] = useState(false);
   const [tracks, setTracks] = useState("");
+  const [busy, setBusy] = useState(false);
+  
   const videoRef = useRef();
   const refCanvas = useRef();
-
+  
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.user);
   const { setNotify, setLoading } = useNotify();
@@ -34,7 +36,6 @@ export default function StatusModal({ onClose, visible }) {
   const { errors } = formState;
 
   const handleChangeImages = (e) => {
-    console.log(e);
     const files = [...e.target.files];
     let err = "";
     let newImages = [];
@@ -95,28 +96,59 @@ export default function StatusModal({ onClose, visible }) {
   };
 
   const handleOnSubmit = async (e) => {
+    let media = [];
+    let res;
     try {
-      if (!images.length) return setNotify("error", "Vui lòng thêm ảnh");
+      setBusy(true);
       setLoading(true);
-      const media = await imageUploadPost(images);
-      const res = await postDataApi(
-        "/posts",
-        { ...e, images: media },
-        auth.token
-      );
+      if (Object.keys(post).length) {
+        const imgNewUrl = images.filter((img) => !img.url);
+        const imgOldUrl = images.filter((img) => img.url);
+        if (
+          post.content === e.content &&
+          imgNewUrl.length === 0 &&
+          imgOldUrl.length === post.images.length
+        ){
+          setBusy(false);
+          setLoading(false);
+          return
+        }
+                  
+        if(imgNewUrl.length > 0) media = await imageUploadPost(imgNewUrl);
+        
+        res = await patchDataApi(`/posts/${post._id}`,{...e,images:[...imgOldUrl,...media]})
+        dispatch(postSlide.actions.updatePost(res.data?.newPost));
+      } else {
+        if (!images.length) return setNotify("error", "Vui lòng thêm ảnh");
+        media = await imageUploadPost(images);
+        res = await postDataApi("/posts", { ...e, images: media }, auth.token);
+        dispatch(postSlide.actions.createPost(res.data?.post));
+      }
 
-      dispatch(postSlide.actions.createPost(res.data?.post));
       setLoading(false);
       setNotify("success", res.data?.msg);
       reset();
       setImages([]);
       onClose && onClose();
       if (tracks) tracks.stop();
+      setBusy(false);
     } catch (error) {
+      setBusy(false);
       setNotify("error", error.response.data?.msg);
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (Object.keys(post).length) {
+      setImages([...post.images]);
+      reset({ content: post.content });
+    }
+    return () => {
+      setImages([]);
+      reset();
+    };
+  }, [visible]);
 
   return (
     <ModalContainer visible={visible} onClose={onClose}>
@@ -150,11 +182,17 @@ export default function StatusModal({ onClose, visible }) {
                   key={index}
                 >
                   <img
-                    className="block w-full h-full object-fill"
-                    src={i.camera ? i.camera : URL.createObjectURL(i)}
+                    className="block w-full max-h-[250px] object-fill"
+                    src={
+                      i.camera
+                        ? i.camera
+                        : i.url
+                        ? i.url
+                        : URL.createObjectURL(i)
+                    }
                     alt=""
                   />
-                  <span className="absolute inset-0 flex justify-center items-center bg-secondary opacity-80 backdrop-blur-sm ">
+                  <span className="absolute inset-0 flex justify-center items-center dark:bg-secondary opacity-70 bg-white">
                     <BsTrash
                       onClick={() => deleteImages(index)}
                       className="text-[crimson] cursor-pointer"
@@ -197,11 +235,14 @@ export default function StatusModal({ onClose, visible }) {
               <>
                 <AiFillCamera
                   size={24}
-                  className="cursor-pointer"
+                  className="cursor-pointer dark:text-white hover:opacity-70"
                   onClick={handleStream}
                 />
                 <div className="overflow-hidden relative mx-2">
-                  <BsFillImageFill size={24} className="cursor-pointer" />
+                  <BsFillImageFill
+                    size={24}
+                    className="cursor-pointer dark:text-white "
+                  />
                   <input
                     onChange={handleChangeImages}
                     className="absolute inset-0 opacity-0 "
@@ -216,7 +257,7 @@ export default function StatusModal({ onClose, visible }) {
           </div>
         </div>
         <div className="flex justify-end">
-          <SubmitBtn type="submit" className="w-auto px-4 py-2">
+          <SubmitBtn busy={busy} disabled={busy}  type="submit" className="w-auto px-4 py-2">
             Post
           </SubmitBtn>
         </div>

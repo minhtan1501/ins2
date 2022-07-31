@@ -4,17 +4,22 @@ import Avatar from "../../Avatar";
 import moment from "moment";
 import DropdownRender from "../../Dropdown";
 import { AiFillDelete, AiFillEdit } from "react-icons/ai";
-
-export default function CardHeader({ post }) {
+import { useSelector } from "react-redux";
+export default function CardHeader({ post,openModalStatus }) {
+  const { profile } = useSelector((state) => state.user);
+  const handleEditPost = () => {
+    openModalStatus(post);
+  };
   const options = [
-    { title: "Chỉnh sửa bài viết", Icon: AiFillEdit },
+    { title: "Chỉnh sửa bài viết", Icon: AiFillEdit, onClick: handleEditPost },
     {
       title: "Xoá bài viết",
       Icon: AiFillDelete,
     },
   ];
+  
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between ">
       <div className="flex space-x-2 p-2">
         <Avatar url={post.user.avatar?.url} size="big" />
         <div>
@@ -31,7 +36,9 @@ export default function CardHeader({ post }) {
           </small>
         </div>
       </div>
-      <DropdownRender options={options} />
+      {profile._id === post.user?._id ? (
+        <DropdownRender options={options} />
+      ) : null}
     </div>
   );
 }

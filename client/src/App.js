@@ -58,6 +58,7 @@ function App() {
     }
     document.documentElement.classList.add("dark");
   }, [auth.mode]);
+
   return (
     <>
       {auth?.token ? <Header /> : null}

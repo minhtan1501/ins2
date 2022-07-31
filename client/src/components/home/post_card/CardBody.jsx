@@ -6,14 +6,14 @@ export default function CardBody({ post }) {
   return (
     <div >
       <div className="p-6 mt-[-10px] ">
-        <span>
+        <span className="dark:text-dark-subtle ">
           {
             post.content?.length < 60 ? post.content : readMore ? post.content + ' ': post.content.slice(0,60) + '...'
           
           }
         </span>
         { 
-          post.content?.length > 60 && <span className="cursor-pointer dark:text-dark-subtle text-light-subtle text-sm font-semibold hover:opacity-70" onClick={() => setReadMore(pre=>!pre)}>{readMore ? "Ẩn bớt" : "Đọc tiếp"}</span>
+          post.content?.length > 60 && <span className="cursor-pointer dark:text-[#ccc] text-light-subtle text-sm font-semibold hover:opacity-70" onClick={() => setReadMore(pre=>!pre)}>{readMore ? "Ẩn bớt" : "Đọc tiếp"}</span>
         }
       </div>
       <div className='border-t-[1px]'>

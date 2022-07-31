@@ -16,12 +16,13 @@ export default function Header() {
   }
   return (
     <>
-    <nav className="p-2 bg-[#ffffff] dark:bg-secondary drop-shadow fixed z-50 top-0 left-0 right-0">
+    <nav className="p-2 bg-[#ffffff] dark:bg-secondary drop-shadow fixed z-50 top-0 left-0 right-0 ">
       <Container>
         <div className="flex items-center justify-between w-full">
           <div className="max-w-[100px]">
-            <Link to="/">
+            <Link to="/" >
               <img
+              onClick={()=> window.scrollTo({top:0})}
                 className="w-full dark:brightness-[10]"
                 src="logoins.png"
                 alt=""
