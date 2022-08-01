@@ -48,6 +48,27 @@ export const unLikePost = createAsyncThunk(
   }
 );
 
+export const createComment = createAsyncThunk(
+  "unLikePost",
+  async ({ auth, post,newComment }, { rejectWithValue }) => {
+    try {
+      const newLikes = post.likes?.filter(
+        (like) => like._id !== auth.profile._id
+      );
+      const newPost = { ...post, likes: [...newLikes] };
+      const res = await patchDataApi(
+        `posts/${post._id}/unlike`,
+        {},
+        auth.token
+      );
+      return newPost;
+    } catch (error) {
+      throw new Error(error.response?.data?.msg)
+    }
+  }
+);
+
+
 const postSlide = createSlice({
   name: "homePosts",
   initialState: {
