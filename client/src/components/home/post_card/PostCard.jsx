@@ -21,13 +21,13 @@ export default function PostCard({ data }) {
   };
   return (
     <>
-      <div className="dark:bg-secondary rounded dark:drop-shadow-xl drop-shadow bg-white ">
+      <div className="dark:bg-secondary rounded dark:drop-shadow-xl shadow bg-white ">
         <CardHeader post={data} openModalStatus={openModalStatus} />
         <CardBody post={data} />
         <CardFooter post={data} />
 
-        <Comments post={data}/>
-        <InputComment post={data}/>        
+        <Comments post={data} />
+        <InputComment post={data} />
       </div>
       <StatusModal
         visible={visibleModalStatus}

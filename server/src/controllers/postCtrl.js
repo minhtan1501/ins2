@@ -24,7 +24,14 @@ const postCtrl = {
       user: [...req.user.following, req.user._id],
     })
       .sort("-createdAt")
-      .populate("user likes", "avatar userName fullName");
+      .populate("user likes", "avatar userName fullName")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user likes",
+          select: "-password",
+        },
+      });
 
     res.status(200).json({ msg: "Thành công!", result: posts.length, posts });
   },
@@ -49,8 +56,9 @@ const postCtrl = {
       {
         content,
         images,
-      }
-    ,{new: true}).populate("user likes", "avatar userName fullName");
+      },
+      { new: true }
+    ).populate("user likes", "avatar userName fullName");
     res.status(200).json({
       msg: "Cập nhật post thành công",
       newPost: {
@@ -61,26 +69,30 @@ const postCtrl = {
     });
   },
   likePost: async (req, res) => {
-    const post = await Posts.find({_id: req.params.id,likes:req.user._id});
-    if(post.length) return sendError(res,'Bạn đã thích bài viết này!');
+    const post = await Posts.find({ _id: req.params.id, likes: req.user._id });
+    if (post.length) return sendError(res, "Bạn đã thích bài viết này!");
 
+    await Posts.findByIdAndUpdate(
+      { _id: req.params.id },
+      {
+        $push: { likes: req.user._id },
+      },
+      { new: true }
+    );
 
-    await Posts.findByIdAndUpdate({_id:req.params.id}, {
-      $push: {likes: req.user._id}
-    },{new:true});
-
-    return res.status(200).json({msg:""})
+    return res.status(200).json({ msg: "" });
   },
   unLikePost: async (req, res) => {
+    await Posts.findByIdAndUpdate(
+      { _id: req.params.id },
+      {
+        $pull: { likes: req.user._id },
+      },
+      { new: true }
+    );
 
-    await Posts.findByIdAndUpdate({_id:req.params.id}, {
-      $pull: {likes: req.user._id}
-    },{new:true});
-
-    return res.status(200).json({msg:""})
+    return res.status(200).json({ msg: "" });
   },
-
-
 };
 
 module.exports = postCtrl;

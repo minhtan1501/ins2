@@ -9,9 +9,9 @@ export default function LikeButton({
   return (
     <>
       {isLike ? (
-        <FaHeart onClick={handleUnLike} className="text-red-500"/>
+        <FaHeart onClick={handleUnLike} className="text-red-500 cursor-pointer"/>
       ) : (
-        <FaRegHeart onClick={handleLike} />
+        <FaRegHeart onClick={handleLike} className='cursor-pointer dark:text-white'/>
       )}
     </>
   );

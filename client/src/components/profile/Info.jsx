@@ -106,10 +106,15 @@ export default function Info() {
                     Chỉnh sửa thông tin
                   </CustomBtn>
                 ) : !follow ? (
-                  <CustomBtn onClick={handleFollower}>Theo dõi</CustomBtn>
+                  <CustomBtn
+                    className="text-sky-500 hover:bg-sky-500 border-sky-500 dark:hover:text-white dark:border-yellow-500 dark:hover:bg-yellow-500 dark:text-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-primary"
+                    onClick={handleFollower}
+                  >
+                    Theo dõi
+                  </CustomBtn>
                 ) : (
                   <CustomBtn
-                    className="text-red-500 hover:bg-red-500 border-red-500 hover:text-white"
+                    className="text-red-500 hover:bg-red-500 border-red-500 dark:hover:text-white"
                     onClick={handleUnFollow}
                   >
                     Huỷ theo dõi

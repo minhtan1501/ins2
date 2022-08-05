@@ -6,12 +6,12 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Dropdown({ options = [] }) {
+export default function Dropdown({ options = [], Icon }) {
   return (
-    <Menu as="div" className="relative inline-block text-left">
+    <Menu as="div" className=" inline-block text-left relative">
       <div>
         <Menu.Button className="mx-2 text-2xl dark:text-dark-subtle text-light-subtle hover:opacity-60">
-          ...
+          {Icon ? <Icon /> : "..."}
         </Menu.Button>
       </div>
 
@@ -24,17 +24,16 @@ export default function Dropdown({ options = [] }) {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-primary drop-shadow ring-1 ring-black ring-opacity-5 focus:outline-none">
-          <div className="py-1">
+        <Menu.Items className=" origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-secondary drop-shadow ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <div className="py-1 ">
             {options.map(({ title, Icon, onClick = null }, index) => {
               return (
-                <Menu.Item
-                  key={index}
-                >
+                <Menu.Item key={index}>
                   {({ active }) => (
                     <div
-                    onClick={onClick}
-                      className={classNames("flex items-center space-x-2 cursor-pointer",
+                      onClick={onClick}
+                      className={classNames(
+                        "flex items-center space-x-2 cursor-pointer",
                         active
                           ? "dark:bg-secondary dark:text-dark-subtle bg-gray-100 text-light-subtle"
                           : "text-black dark:text-white",
@@ -48,7 +47,6 @@ export default function Dropdown({ options = [] }) {
                 </Menu.Item>
               );
             })}
-           
           </div>
         </Menu.Items>
       </Transition>

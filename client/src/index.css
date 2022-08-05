@@ -183,3 +183,10 @@ input[type="file"]::-webkit-file-upload-button {
   object-fit: fill;
   width: 100%;
 } */
+.swiper-slide {
+  background-position: center;
+  background-size: cover;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

@@ -24,7 +24,7 @@ export default function TextareaFiled({
             className={`${
               errors[name] ? "border-red-600" : null
             }  p-1 peer outline-none border-2 
-            transition rounded dark:text-dark-subtle  
+            transition rounded dark:text-white  
             dark:border-dark-subtle border-light-subtle 
             focus:border-primary bg-transparent 
             focus:dark:border-white focus:border-primary 
