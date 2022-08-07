@@ -5,13 +5,15 @@ const { sendError } = require("../utils/helper");
 
 const commentCtrl = {
   createComment: async (req, res) => {
-    const { postId, content, tag, reply } = req.body;
+    const { postId, content, tag, reply,postUserId } = req.body;
 
     const newComment = new Comments({
       user: req.user._id,
       content,
       tag,
       reply,
+      postId,
+      postUserId
     });
 
     await Posts.findOneAndUpdate(
@@ -65,7 +67,10 @@ const commentCtrl = {
     if(!isValidObjectId(req.params.id)) return sendError(res,'Xóa bình luận thất bại!');
     const comment =  await Comments.findByIdAndDelete(req.params.id);
     if(!comment) return sendError(res,'Xóa bình luận thất bại!');  
-
+    console.log(comment);
+    await Posts.findOneAndUpdate({_id: comment.postId}, {
+      $pull: { comments: req.params.id },
+    })
     return res.status(200).json({ msg: "Xóa bình luận thành công" });
   },
   

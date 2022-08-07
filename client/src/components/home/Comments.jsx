@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CommentDisplay from "./comments/CommentDisplay";
 
-export default function Comments({ post }) {
+export default function Comments({ post,handleUpdatePost }) {
   const [comments, setComments] = useState([]);
   const [showComments, setShowComments] = useState([]);
   const [next, setNext] = useState(2);
@@ -24,6 +24,7 @@ export default function Comments({ post }) {
       {showComments.map((comment, index) => {
         return (
           <CommentDisplay
+          handleUpdatePost={handleUpdatePost}
             key={comment._id || index}
             comment={comment}
             post={post}

@@ -1,6 +1,7 @@
 const Posts = require("../models/postModel");
 const { sendError } = require("../utils/helper");
 const cloudinary = require("../cloud");
+const { isValidObjectId } = require("mongoose");
 const postCtrl = {
   createPost: async (req, res) => {
     const { content, images } = req.body;
@@ -58,7 +59,15 @@ const postCtrl = {
         images,
       },
       { new: true }
-    ).populate("user likes", "avatar userName fullName");
+    )
+      .populate("user likes", "avatar userName fullName")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user likes",
+          select: "-password",
+        },
+      });
     res.status(200).json({
       msg: "Cập nhật post thành công",
       newPost: {
@@ -92,6 +101,35 @@ const postCtrl = {
     );
 
     return res.status(200).json({ msg: "" });
+  },
+  getUserPosts: async (req, res) => {
+    if (!isValidObjectId(req.params.id))
+      return sendError(res, "Người dùng không hợp lệ!");
+    const posts = await Posts.find({ user: req.params.id })
+      .sort("-createdAt")
+      .populate("user likes", "avatar userName fullName")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user likes",
+          select: "-password",
+        },
+      });
+    res.status(200).json({ posts, result: posts.length });
+  },
+  getPostById: async (req, res) => {
+    if (!isValidObjectId(req.params.id))
+      return sendError(res, "Mã bài viết không hợp lệ!");
+    const post = await Posts.findById(req.params.id)
+      .populate("user likes", "avatar userName fullName")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user likes",
+          select: "-password",
+        },
+      });
+    return res.status(200).json({ post });
   },
 };
 

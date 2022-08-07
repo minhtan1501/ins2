@@ -62,7 +62,11 @@ export const createComment = createAsyncThunk(
   "createComment",
   async ({ auth, post, newComment }, { rejectWithValue }) => {
     try {
-      const data = { ...newComment, postId: post._id };
+      const data = {
+        ...newComment,
+        postId: post._id,
+        postUserId: post.user._id,
+      };
       const res = await postDataApi("comment", data, auth.token);
 
       const newData = { ...res.data.newComment, user: auth.profile };
@@ -94,11 +98,20 @@ export const removeComment = createAsyncThunk(
   "removeComment",
   async ({ post, comment, auth }, { rejectWithValue }) => {
     try {
+      const deleteArr = [
+        ...post.comments.filter((r) => r.reply === comment._id),
+        comment,
+      ];
+
       const newComment = post.comments.filter((c) => {
-        return c._id !== comment._id;
+        return !deleteArr.find((da) => c._id === da._id);
       });
       const newPost = { ...post, comments: newComment };
-      await deleteDataApi(`comment/${comment._id}`, auth.token);
+      await Promise.all(
+        deleteArr.map(async (c) => {
+          await deleteDataApi(`comment/${c._id}`, auth.token);
+        })
+      );
       return newPost;
     } catch (error) {
       throw new Error(error.response.data?.msg);
@@ -215,7 +228,7 @@ const postSlide = createSlice({
       const oldState = state.posts;
       const newState = updateData(oldState, action.payload);
       state.posts = newState;
-    }
+    },
   },
 });
 

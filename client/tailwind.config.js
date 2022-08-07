@@ -20,7 +20,7 @@ module.exports = {
       },
       gridTemplateColumns: {
         'img': 'repeat(auto-fill, minmax(100px, 1fr))',
-
+        'postThumb': 'repeat(auto-fill, minmax(300px, 1fr))'
       }
     },
   },

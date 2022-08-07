@@ -12,7 +12,7 @@ import { imageUploadPost } from "../../utils/imageUpload";
 import TextareaFiled from "../formFiled/TextareaFiled";
 import SubmitBtn from "../SubmitBtn";
 import ModalContainer from "./ModalContainer";
-export default function StatusModal({ onClose, visible, post = {} }) {
+export default function StatusModal({ handleUpdatePost,onClose, visible, post = {} }) {
   const [images, setImages] = useState([]);
   const [stream, setStream] = useState(false);
   const [tracks, setTracks] = useState("");
@@ -116,7 +116,7 @@ export default function StatusModal({ onClose, visible, post = {} }) {
                   
         if(imgNewUrl.length > 0) media = await imageUploadPost(imgNewUrl);
         
-        res = await patchDataApi(`/posts/${post._id}`,{...e,images:[...imgOldUrl,...media]})
+        res = await patchDataApi(`/posts/${post._id}`,{...e,images:[...imgOldUrl,...media]},auth.token)
         dispatch(postSlide.actions.updatePost(res.data?.newPost));
       } else {
         if (!images.length) return setNotify("error", "Vui lòng thêm ảnh");
@@ -124,7 +124,7 @@ export default function StatusModal({ onClose, visible, post = {} }) {
         res = await postDataApi("/posts", { ...e, images: media }, auth.token);
         dispatch(postSlide.actions.createPost(res.data?.post));
       }
-
+      handleUpdatePost && handleUpdatePost(res.data?.newPost);
       setLoading(false);
       setNotify("success", res.data?.msg);
       reset();

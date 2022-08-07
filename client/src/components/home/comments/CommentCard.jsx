@@ -15,7 +15,7 @@ import LikeButton from "../post_card/LikeButton";
 import CommentMenu from "./CommentMenu";
 import InputComment from "../InputComment";
 
-export default function CommentCard({ children, comment, post, commentId }) {
+export default function CommentCard({handleUpdatePost, children, comment, post, commentId }) {
   const auth = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
@@ -59,6 +59,7 @@ export default function CommentCard({ children, comment, post, commentId }) {
         const res = await dispatch(
           updateComment({ auth, comment, post, content })
         );
+        handleUpdatePost && handleUpdatePost(res.payload)
         unwrapResult(res);
         setOnEdit(false);
         setNotify("success", "Cập nhật thành công");

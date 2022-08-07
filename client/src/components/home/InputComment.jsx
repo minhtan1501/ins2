@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useNotify from "../../hooks/useNotify";
 import postSlide, { createComment } from "../../redux/slice/postSlide";
-export default function InputComment({ children, post,onReply,setOnReply }) {
+export default function InputComment({ children,handleUpdatePost, post,onReply,setOnReply }) {
   const [content, setContent] = useState("");
   const auth = useSelector((state) => state.user);
   const { setNotify } = useNotify();
@@ -24,8 +24,11 @@ export default function InputComment({ children, post,onReply,setOnReply }) {
         tag: onReply && onReply.user 
       };
       const newPost = {...post,comments: [...post.comments,newComment]}
+      handleUpdatePost && handleUpdatePost(newPost)
       dispatch(postSlide.actions.updatePost(newPost))
       const res = await dispatch(createComment({ post, newComment, auth }));
+      handleUpdatePost && handleUpdatePost({...res.payload})
+      
       unwrapResult(res);
       setContent("");
       if(setOnReply) return setOnReply(false);

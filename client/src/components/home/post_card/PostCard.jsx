@@ -6,7 +6,7 @@ import StatusModal from "../../Modal/StatusModal";
 import Comments from "../Comments";
 import InputComment from "../InputComment";
 
-export default function PostCard({ data }) {
+export default function PostCard({ data,handleUpdatePost }) {
   const [visibleModalStatus, setVisibleModalStatus] = useState(false);
   const [post, setPost] = useState({});
 
@@ -26,10 +26,11 @@ export default function PostCard({ data }) {
         <CardBody post={data} />
         <CardFooter post={data} />
 
-        <Comments post={data} />
-        <InputComment post={data} />
+        <Comments post={data} handleUpdatePost={handleUpdatePost}/>
+        <InputComment post={data} handleUpdatePost={handleUpdatePost}/>
       </div>
       <StatusModal
+      handleUpdatePost={handleUpdatePost}
         visible={visibleModalStatus}
         onClose={closeModalStatus}
         post={post}

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import CommentCard from "./CommentCard";
 
-export default function CommentDisplay({ comment, post, replyCm }) {
+export default function CommentDisplay({handleUpdatePost, comment, post, replyCm }) {
   const [showRep,setShowRep] = useState([]);
   const [next,setNext] = useState(1);
 
@@ -13,12 +13,12 @@ export default function CommentDisplay({ comment, post, replyCm }) {
   
   return (
     <div className="py-[10px] px-[25px]">
-      <CommentCard comment={comment} post={post} commentId={comment._id}>
+      <CommentCard handleUpdatePost={handleUpdatePost} comment={comment} post={post} commentId={comment._id}>
         <div className="pl-4">
-          {showRep.map((item) => (
+          {showRep.map((item,index) => (
             item.reply && 
               <CommentCard
-                key={item._id}
+                key={index}
                 comment={item}
                 commentId={comment._id}
                 post={post}

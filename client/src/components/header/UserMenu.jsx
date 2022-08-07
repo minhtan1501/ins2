@@ -31,15 +31,15 @@ export default function UserMenu({
     <div className="flex items-center">
       <div className="relative ">
         <Avatar
-        className="cursor-pointer"
+          className="cursor-pointer"
           url={auth.profile?.avatar?.url}
           onClick={() => setVisible((pre) => !pre)}
         />
-      <CreateOptions
-        options={options}
-        visible={visible}
-        onClose={() => setVisible(false)}
-      />
+        <CreateOptions
+          options={options}
+          visible={visible}
+          onClose={() => setVisible(false)}
+        />
       </div>
     </div>
   );
@@ -55,8 +55,8 @@ const CreateOptions = ({ options, visible, onClose }) => {
 
       if (parentElement?.id === containerId || id === containerId) return;
 
-      if (!container.current.classList.contains("animate-scale")) {
-        container.current.classList.add("animate-scale-reverse");
+      if (!container.current?.classList.contains("animate-scale")) {
+        container.current?.classList.add("animate-scale-reverse");
       }
     };
 
@@ -88,7 +88,7 @@ const CreateOptions = ({ options, visible, onClose }) => {
       border-none right-2 "
       onAnimationEnd={handleAnimationEnd}
     >
-      <ul className="">
+      <ul className="user__menu">
         {options.map(({ title, onClick, icon }) => {
           return (
             <Option
@@ -107,23 +107,20 @@ const CreateOptions = ({ options, visible, onClose }) => {
 
 const Option = ({ children, onClick, Icon }) => {
   return (
-    <li>
-      <div
-        className="
-              text-sm py-2 px-4
-              font-normal block w-full cursor-pointer
-              whitespace-nowrap bg-transparent hover:bg-dark-subtle
-              dark:text-white  border-b-[1px] dark:border-dark-subtle
-              "
-        onClick={onClick}
-      >
+    <li className="user__menu-item
+    text-sm py-2 px-4
+    font-normal block w-full cursor-pointer
+    whitespace-nowrap bg-transparent hover:bg-dark-subtle
+    dark:text-white  border-b-[1px] dark:border-dark-subtle
+    "
+onClick={onClick}>
+      
         <div className=" flex justify-between items-center space-x-2">
           <div>
             <Icon size={20} />
           </div>
           <div className="font-semibold">{children}</div>
         </div>
-      </div>
     </li>
   );
 };
