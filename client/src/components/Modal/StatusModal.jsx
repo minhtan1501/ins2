@@ -89,7 +89,6 @@ export default function StatusModal({ handleUpdatePost,onClose, visible, post = 
     let URL = refCanvas.current.toDataURL();
     setImages([...images, { camera: URL }]);
   };
-
   const handleStopStream = () => {
     tracks.stop();
     setStream(false);
@@ -119,8 +118,9 @@ export default function StatusModal({ handleUpdatePost,onClose, visible, post = 
         res = await patchDataApi(`/posts/${post._id}`,{...e,images:[...imgOldUrl,...media]},auth.token)
         dispatch(postSlide.actions.updatePost(res.data?.newPost));
       } else {
-        if (!images.length) return setNotify("error", "Vui lòng thêm ảnh");
+        if (images.length < 0) return setNotify("error", "Vui lòng thêm ảnh");
         media = await imageUploadPost(images);
+        console.log(media)
         res = await postDataApi("/posts", { ...e, images: media }, auth.token);
         dispatch(postSlide.actions.createPost(res.data?.post));
       }
@@ -134,6 +134,7 @@ export default function StatusModal({ handleUpdatePost,onClose, visible, post = 
       setBusy(false);
     } catch (error) {
       setBusy(false);
+      console.log('helo');
       setNotify("error", error.response.data?.msg);
       setLoading(false);
     }

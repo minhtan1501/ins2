@@ -4,6 +4,7 @@ import Avatar from "../../Avatar";
 import moment from "moment";
 import DropdownRender from "../../Dropdown";
 import { AiFillDelete, AiFillEdit } from "react-icons/ai";
+import {MdContentCopy} from 'react-icons/md'
 import { useSelector } from "react-redux";
 export default function CardHeader({ post,handleDeletePost,openModalStatus }) {
   const { profile } = useSelector((state) => state.user);
@@ -17,6 +18,10 @@ export default function CardHeader({ post,handleDeletePost,openModalStatus }) {
       Icon: AiFillDelete,
       onClick: handleDeletePost
     },
+    {
+      title: "Coppy link",
+      Icon: MdContentCopy
+    }
   ];
   
   return (

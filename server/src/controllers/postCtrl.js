@@ -34,10 +34,13 @@ const postCtrl = {
       user: req.user._id,
     });
 
-    await newPost.save();
+
     res.status(200).json({
       msg: "Tạo post thành công",
-      post: newPost,
+      post: {
+        ...newPost._doc,
+        user: req.user
+      },
     });
   },
   getPosts: async (req, res) => {
@@ -67,15 +70,14 @@ const postCtrl = {
     const result = await Promise.allSettled([posts, counting.query]);
     const p = result[0].status === "fulfilled" ? result[0].value : [];
     const count = result[1].status === "fulfilled" ? result[1].value : 0;
-    if(!count ) return sendError(res, "Không tìm thấy bài viết nào!");
+    if (!count) return sendError(res, "Không tìm thấy bài viết nào!");
 
     res.status(200).json({ msg: "Thành công!", result: count, posts: p });
   },
   uploadImg: async (req, res) => {
-    const { file } = req;
-
+    let { file } = req;
+    console.log(file)
     if (!file) return sendError(res, "Hình ảnh rỗng");
-
     const { public_id, url } = await cloudinary.uploader.upload(file.path, {
       height: 500,
       width: 500,
@@ -124,12 +126,12 @@ const postCtrl = {
       { new: true }
     );
 
-      if(!like) return sendError(res, "Bài viết không tồn tại")
+    if (!like) return sendError(res, "Bài viết không tồn tại")
 
     return res.status(200).json({ msg: "" });
   },
   unLikePost: async (req, res) => {
-   const unlike =   await Posts.findByIdAndUpdate(
+    const unlike = await Posts.findByIdAndUpdate(
       { _id: req.params.id },
       {
         $pull: { likes: req.user._id },
@@ -137,7 +139,7 @@ const postCtrl = {
       { new: true }
     );
 
-      if(!unlike) return sendError(res, "Bài viết không tồn tại!")
+    if (!unlike) return sendError(res, "Bài viết không tồn tại!")
 
     return res.status(200).json({ msg: "" });
   },
@@ -194,8 +196,8 @@ const postCtrl = {
       }),
       req.query
     ).paginating();
-    
-    const posts =  features.query.sort("-createdAt");
+
+    const posts = features.query.sort("-createdAt");
     const counting = new APIfeatures(
       Posts.find({
         user: { $nin: [...req.user.following, req.user._id] },
@@ -208,17 +210,17 @@ const postCtrl = {
     const count = result[1].status === "fulfilled" ? result[1].value : 0;
 
 
-    res.status(200).json({ msg: "Thành công!", result: count, posts:p });
+    res.status(200).json({ msg: "Thành công!", result: count, posts: p });
   },
-  deletePost: async (req, res) =>{
-    const post = await Posts.findOneAndDelete({_id: req.params.id,user:req.user._id});
-    if(!post){
+  deletePost: async (req, res) => {
+    const post = await Posts.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    if (!post) {
       return res.status(404).json({ msg: "Xóa bài viết thất bại!" });
     }
-    await Comments.deleteMany({_id: {$in: post.comments}})
+    await Comments.deleteMany({ _id: { $in: post.comments } })
 
     return res.status(200).json({ msg: "Xóa bài viết thành công!" });
-    
+
 
   }
 };

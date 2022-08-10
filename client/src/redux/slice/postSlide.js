@@ -172,8 +172,11 @@ export const deletePost = createAsyncThunk(
   "deletePost",
   async ({ auth, post }) => {
     try {
+      await deleteDataApi(`posts/${post._id}`,auth.token)
       return post
-    } catch (error) {}
+    } catch (error) {
+      throw new Error(error.response.data?.msg);
+    }
   }
 );
 
@@ -188,6 +191,7 @@ const postSlide = createSlice({
   reducers: {
     createPost(state, action) {
       const oldState = state.posts;
+      console.log(action.payload)
       state.posts = [action.payload, ...oldState];
     },
     updatePost(state, action) {
@@ -251,8 +255,9 @@ const postSlide = createSlice({
       state.posts = newState;
     },
     [deletePost.fulfilled]: (state, action) => {
-      const newState = deleteData(state,action.payload);
+      const newState = deleteData(state.posts,action.payload);
       state.posts = newState;
+      state.result = state.result - 1;
     }
   },
 });

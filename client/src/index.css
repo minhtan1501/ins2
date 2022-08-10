@@ -131,7 +131,7 @@ input[type="file"]::-webkit-file-upload-button {
 
 .show-img:hover span {
   display: flex;
-  animation: show-modal-img linear 0.5s forwards;
+  animation: show-modal-img linear 0.1s forwards;
 
 }
 
