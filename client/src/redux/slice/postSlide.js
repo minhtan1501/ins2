@@ -17,6 +17,13 @@ const updateData = (oldState, data) => {
   return newState;
 };
 
+const deleteData = (oldState, data) => {
+  const newState = oldState.filter((a) => {
+    return data._id !== a._id;
+  });
+  return newState;
+};
+
 export const getPosts = createAsyncThunk(
   "getPosts",
   async (token, { rejectWithValue }) => {
@@ -161,12 +168,21 @@ export const unLikeComment = createAsyncThunk(
   }
 );
 
+export const deletePost = createAsyncThunk(
+  "deletePost",
+  async ({ auth, post }) => {
+    try {
+      return post
+    } catch (error) {}
+  }
+);
+
 const postSlide = createSlice({
   name: "homePosts",
   initialState: {
     posts: [],
     result: 0,
-    page: 0,
+    page: 2,
     loading: false,
   },
   reducers: {
@@ -178,6 +194,11 @@ const postSlide = createSlice({
       const oldState = state.posts;
       const newState = updateData(oldState, action.payload);
       state.posts = newState;
+    },
+    loadMorePosts(state, action) {
+      state.posts = action.payload.posts;
+      state.page = state.page + 1;
+      state.result = action.payload.result;
     },
   },
   extraReducers: {
@@ -229,6 +250,10 @@ const postSlide = createSlice({
       const newState = updateData(oldState, action.payload);
       state.posts = newState;
     },
+    [deletePost.fulfilled]: (state, action) => {
+      const newState = deleteData(state,action.payload);
+      state.posts = newState;
+    }
   },
 });
 

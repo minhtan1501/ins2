@@ -28,18 +28,17 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
         ...user,
         followers: [...user.followers, auth.profile],
       };
-      setUser({ ...newUser });
       const newProfile = {
         ...auth.profile,
         following: [...auth.profile.following, user],
       };
-      setFollow(true);
       dispatch(userSlice.actions.updateProfile({ profile: newProfile }));
       await patchDataApi(`user/${user._id}/follow`, null, auth.token);
+      setUser(newUser);
     } catch (error) {
       setNotify("error", error.response.data?.msg);
     }
-  }, [auth, user]);
+  }, [auth.profile, user, auth.token]);
   // unfollow
   const handleUnFollow = useCallback(async () => {
     try {
@@ -53,12 +52,11 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
       };
       dispatch(userSlice.actions.updateProfile({ profile: newProfile }));
       setUser(newUser);
-      setFollow(false);
       await patchDataApi(`user/${user._id}/unfollow`, null, auth.token);
     } catch (error) {
       setNotify("error", error.response.data?.msg);
     }
-  }, [auth, user]);
+  }, [auth.profile, user, auth.token]);
 
   useEffect(() => {
     setUser(profile);
@@ -69,9 +67,11 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
       const found = user.followers?.find((f) => f._id === auth.profile?._id);
       if (found) {
         setFollow(true);
+      } else {
+        setFollow(false);
       }
     }
-  }, [user, auth]);
+  }, [user, auth.profile]);
   return (
     <div className="flex justify-center">
       {Object.keys(user).length ? (
@@ -83,7 +83,10 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
                 {user.userName}
               </h2>
               {auth.profile?._id === user._id ? (
-                <CustomBtn className="dark:border-yellow-500 dark:text-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-black border-sky-500 hover:bg-sky-500 hover:text-white text-sky-500" onClick={() => setEditProfile(true)}>
+                <CustomBtn
+                  className="dark:border-yellow-500 dark:text-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-black border-sky-500 hover:bg-sky-500 hover:text-white text-sky-500"
+                  onClick={() => setEditProfile(true)}
+                >
                   Chỉnh sửa thông tin
                 </CustomBtn>
               ) : !follow ? (
@@ -123,9 +126,11 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
             <h6 className="text-sm font-semibold dark:text-dark-subtle ">
               {user.fullName}{" "}
             </h6>
-            <span className="text-red-500 font-semibold text-sm">
-              Điện thoại: {user.mobile}
-            </span>
+            {user.mobile && (
+              <span className="text-red-500 font-semibold text-sm">
+                Điện thoại: {user.mobile}
+              </span>
+            )}
             <p className="text-sm dark:text-dark-subtle light:text-light-subtle font-semibold">
               {user.address}
             </p>

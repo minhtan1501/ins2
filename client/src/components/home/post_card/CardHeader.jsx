@@ -5,7 +5,7 @@ import moment from "moment";
 import DropdownRender from "../../Dropdown";
 import { AiFillDelete, AiFillEdit } from "react-icons/ai";
 import { useSelector } from "react-redux";
-export default function CardHeader({ post,openModalStatus }) {
+export default function CardHeader({ post,handleDeletePost,openModalStatus }) {
   const { profile } = useSelector((state) => state.user);
   const handleEditPost = () => {
     openModalStatus(post);
@@ -15,6 +15,7 @@ export default function CardHeader({ post,openModalStatus }) {
     {
       title: "Xoá bài viết",
       Icon: AiFillDelete,
+      onClick: handleDeletePost
     },
   ];
   

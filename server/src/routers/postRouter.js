@@ -8,8 +8,11 @@ router
   .post(auth, postCtrl.createPost)
   .get(auth, postCtrl.getPosts);
 
-router.route("/posts/:id").patch(auth,postCtrl.updatePost).get(auth,postCtrl.getPostById);
-
+router
+  .route("/posts/:id")
+  .patch(auth, postCtrl.updatePost)
+  .get(auth, postCtrl.getPostById)
+  .delete(auth, postCtrl.deletePost);
 router.post(
   "/posts/upload-img",
   uploadImage.single("file"),
@@ -20,5 +23,7 @@ router.patch(`/posts/:id/like`, auth, postCtrl.likePost);
 router.patch(`/posts/:id/unlike`, auth, postCtrl.unLikePost);
 
 router.get(`/user_posts/:id`, auth, postCtrl.getUserPosts);
+
+router.get("/posts_discover", auth, postCtrl.getPostsDicover);
 
 module.exports = router;

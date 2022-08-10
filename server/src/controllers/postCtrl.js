@@ -2,6 +2,26 @@ const Posts = require("../models/postModel");
 const { sendError } = require("../utils/helper");
 const cloudinary = require("../cloud");
 const { isValidObjectId } = require("mongoose");
+const Comments = require("../models/commentModel");
+class APIfeatures {
+  constructor(query, queryString) {
+    this.query = query;
+    this.queryString = queryString;
+  }
+
+  paginating() {
+    const page = this.queryString.page * 1 || 1;
+    const limit = this.queryString.limit * 1 || 3;
+    const skip = (page - 1) * limit;
+    this.query = this.query.skip(skip).limit(limit);
+    return this;
+  }
+  counting = () => {
+    this.query = this.query.count();
+    return this;
+  };
+}
+
 const postCtrl = {
   createPost: async (req, res) => {
     const { content, images } = req.body;
@@ -21,9 +41,13 @@ const postCtrl = {
     });
   },
   getPosts: async (req, res) => {
-    const posts = await Posts.find({
-      user: [...req.user.following, req.user._id],
-    })
+    const features = new APIfeatures(
+      Posts.find({
+        user: [...req.user.following, req.user._id],
+      }),
+      req.query
+    ).paginating();
+    const posts = features.query
       .sort("-createdAt")
       .populate("user likes", "avatar userName fullName")
       .populate({
@@ -33,8 +57,19 @@ const postCtrl = {
           select: "-password",
         },
       });
+    const counting = new APIfeatures(
+      Posts.find({
+        user: [...req.user.following, req.user._id],
+      }),
+      req.query
+    ).counting();
 
-    res.status(200).json({ msg: "Thành công!", result: posts.length, posts });
+    const result = await Promise.allSettled([posts, counting.query]);
+    const p = result[0].status === "fulfilled" ? result[0].value : [];
+    const count = result[1].status === "fulfilled" ? result[1].value : 0;
+    if(!count ) return sendError(res, "Không tìm thấy bài viết nào!");
+
+    res.status(200).json({ msg: "Thành công!", result: count, posts: p });
   },
   uploadImg: async (req, res) => {
     const { file } = req;
@@ -81,7 +116,7 @@ const postCtrl = {
     const post = await Posts.find({ _id: req.params.id, likes: req.user._id });
     if (post.length) return sendError(res, "Bạn đã thích bài viết này!");
 
-    await Posts.findByIdAndUpdate(
+    const like = await Posts.findByIdAndUpdate(
       { _id: req.params.id },
       {
         $push: { likes: req.user._id },
@@ -89,10 +124,12 @@ const postCtrl = {
       { new: true }
     );
 
+      if(!like) return sendError(res, "Bài viết không tồn tại")
+
     return res.status(200).json({ msg: "" });
   },
   unLikePost: async (req, res) => {
-    await Posts.findByIdAndUpdate(
+   const unlike =   await Posts.findByIdAndUpdate(
       { _id: req.params.id },
       {
         $pull: { likes: req.user._id },
@@ -100,12 +137,20 @@ const postCtrl = {
       { new: true }
     );
 
+      if(!unlike) return sendError(res, "Bài viết không tồn tại!")
+
     return res.status(200).json({ msg: "" });
   },
   getUserPosts: async (req, res) => {
     if (!isValidObjectId(req.params.id))
       return sendError(res, "Người dùng không hợp lệ!");
-    const posts = await Posts.find({ user: req.params.id })
+
+    const features = new APIfeatures(
+      Posts.find({ user: req.params.id }),
+      req.query
+    ).paginating();
+
+    const posts = features.query
       .sort("-createdAt")
       .populate("user likes", "avatar userName fullName")
       .populate({
@@ -115,7 +160,18 @@ const postCtrl = {
           select: "-password",
         },
       });
-    res.status(200).json({ posts, result: posts.length });
+    const counting = new APIfeatures(
+      Posts.find({
+        user: [...req.user.following, req.user._id],
+      }),
+      req.query
+    ).counting();
+
+    const result = await Promise.allSettled([posts, counting.query]);
+    const p = result[0].status === "fulfilled" ? result[0].value : [];
+    const count = result[1].status === "fulfilled" ? result[1].value : 0;
+
+    res.status(200).json({ posts: p, result: count });
   },
   getPostById: async (req, res) => {
     if (!isValidObjectId(req.params.id))
@@ -131,6 +187,40 @@ const postCtrl = {
       });
     return res.status(200).json({ post });
   },
+  getPostsDicover: async (req, res) => {
+    const features = new APIfeatures(
+      Posts.find({
+        user: { $nin: [...req.user.following, req.user._id] },
+      }),
+      req.query
+    ).paginating();
+    
+    const posts =  features.query.sort("-createdAt");
+    const counting = new APIfeatures(
+      Posts.find({
+        user: { $nin: [...req.user.following, req.user._id] },
+      }),
+      req.query
+    ).counting();
+
+    const result = await Promise.allSettled([posts, counting.query]);
+    const p = result[0].status === "fulfilled" ? result[0].value : [];
+    const count = result[1].status === "fulfilled" ? result[1].value : 0;
+
+
+    res.status(200).json({ msg: "Thành công!", result: count, posts:p });
+  },
+  deletePost: async (req, res) =>{
+    const post = await Posts.findOneAndDelete({_id: req.params.id,user:req.user._id});
+    if(!post){
+      return res.status(404).json({ msg: "Xóa bài viết thất bại!" });
+    }
+    await Comments.deleteMany({_id: {$in: post.comments}})
+
+    return res.status(200).json({ msg: "Xóa bài viết thành công!" });
+    
+
+  }
 };
 
 module.exports = postCtrl;
