@@ -24,7 +24,7 @@ exports.validateLogin = [
   check("email").isEmail().withMessage("Email không đúng định dạng"),
 ];
 
-exports.valiedatePassword = [
+exports.validatePassword = [
   check("password")
     .notEmpty()
     .withMessage("Mật khẩu không được bỏ trống")

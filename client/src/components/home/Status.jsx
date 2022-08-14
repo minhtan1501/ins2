@@ -17,7 +17,7 @@ export default function Status() {
 
   return (
     <>
-    <div className="flex my-3 bg-white drop-shadow p-5 rounded space-x-2 dark:bg-secondary">
+    <div className="flex my-3 bg-white drop-shadow p-5 rounded space-x-2 dark:bg-secondary select-none">
         <Avatar url={auth.profile.avatar?.url} size='big'/>
         <button onClick={openModal} className="hover:bg-[#ddd] flex-1 text-left bg-gray-100 dark:bg-[#202020] rounded-[30px] px-[10px] outline-none text-[#555] dark:text-dark-subtle ">
             {auth.profile.userName}, Bạn đang nghĩ gì vậy?

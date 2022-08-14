@@ -15,7 +15,9 @@ const userCtrl = {
     const { id } = req.params;
     if (!isValidObjectId(id)) return sendError(res, "Người dùng không hợp lệ");
 
-    const user = await User.findById(id).select("-password").populate("followers following", '-password');
+    const user = await User.findById(id)
+      .select("-password")
+      .populate("followers following", "-password");
     if (!user) return sendError(res, "Không tìm thấy người dùng");
 
     return res.status(200).json({ profile: user });
@@ -48,7 +50,6 @@ const userCtrl = {
 
     if (!isValidObjectId(id)) return sendError(res, "Người dùng không hợp lệ!");
     const user = await User.find({ _id: id, followers: req.user._id });
-    console.log(user);
     if (user.length > 0)
       return sendError(res, "Bạn đã theo dõi người dùng này rồi!");
 
@@ -91,6 +92,34 @@ const userCtrl = {
     );
 
     res.status(200).json({ msg: " Huỷ theo dõi thành công!" });
+  },
+  suggestionsUser: async (req, res) => {
+    const newArr = [...req.user.following,req.user._id ];
+
+    const num = req.query.num || 10;
+
+    const users = await User.aggregate([
+      { $match: { _id: { $nin: newArr } } },
+      { $sample: { size: num } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "followers",
+          foreignField: "_id",
+          as: "followers",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "following",
+          foreignField: "_id",
+          as: "following",
+        },
+      },
+    ]).project("-password");
+
+    return res.status(200).json({users,result: users.length})
   },
 };
 

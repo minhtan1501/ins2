@@ -7,22 +7,31 @@ import { useDispatch, useSelector } from "react-redux";
 import * as yup from "yup";
 import { patchDataApi, postDataApi } from "../../api/userApi";
 import useNotify from "../../hooks/useNotify";
+import { createNotify } from "../../redux/slice/notifySlide";
 import postSlide from "../../redux/slice/postSlide";
 import { imageUploadPost } from "../../utils/imageUpload";
 import TextareaFiled from "../formFiled/TextareaFiled";
 import SubmitBtn from "../SubmitBtn";
 import ModalContainer from "./ModalContainer";
-export default function StatusModal({ handleUpdatePost,onClose, visible, post = {} }) {
+export default function StatusModal({
+  handleUpdatePost,
+  onClose,
+  visible,
+  post = {},
+}) {
   const [images, setImages] = useState([]);
   const [stream, setStream] = useState(false);
   const [tracks, setTracks] = useState("");
   const [busy, setBusy] = useState(false);
-  
+
   const videoRef = useRef();
   const refCanvas = useRef();
-  
+
   const dispatch = useDispatch();
-  const auth = useSelector((state) => state.user);
+  const {
+    user: auth,
+    socket: { info: socket },
+  } = useSelector((state) => state);
   const { setNotify, setLoading } = useNotify();
   const schema = yup.object().shape({
     content: yup.string().required("Không được bỏ trống"),
@@ -107,24 +116,41 @@ export default function StatusModal({ handleUpdatePost,onClose, visible, post = 
           post.content === e.content &&
           imgNewUrl.length === 0 &&
           imgOldUrl.length === post.images.length
-        ){
+        ) {
           setBusy(false);
           setLoading(false);
-          return
+          return;
         }
-                  
-        if(imgNewUrl.length > 0) media = await imageUploadPost(imgNewUrl);
-        
-        res = await patchDataApi(`/posts/${post._id}`,{...e,images:[...imgOldUrl,...media]},auth.token)
+
+        if (imgNewUrl.length > 0) media = await imageUploadPost(imgNewUrl);
+
+        res = await patchDataApi(
+          `/posts/${post._id}`,
+          { ...e, images: [...imgOldUrl, ...media] },
+          auth.token
+        );
         dispatch(postSlide.actions.updatePost(res.data?.newPost));
       } else {
         if (images.length < 0) return setNotify("error", "Vui lòng thêm ảnh");
+
         media = await imageUploadPost(images);
-        console.log(media)
+
         res = await postDataApi("/posts", { ...e, images: media }, auth.token);
+
         dispatch(postSlide.actions.createPost(res.data?.post));
+
+        const msg = {
+          id: res.data.post._id,
+          text: "added a new post.",
+          recipients: res.data.post.user.followers,
+          url: `/post/${res.data.post._id}`,
+          content: e.content,
+          image: media[0]?.url,
+        };
+        dispatch(createNotify({ auth, msg, socket }));
       }
-      handleUpdatePost && handleUpdatePost(res.data?.newPost);
+      handleUpdatePost && handleUpdatePost(res.data?.post);
+
       setLoading(false);
       setNotify("success", res.data?.msg);
       reset();
@@ -134,8 +160,8 @@ export default function StatusModal({ handleUpdatePost,onClose, visible, post = 
       setBusy(false);
     } catch (error) {
       setBusy(false);
-      console.log('helo');
-      setNotify("error", error.response.data?.msg);
+    console.log(error);      
+      setNotify("error", error.response?.data?.msg);
       setLoading(false);
     }
   };
@@ -258,7 +284,12 @@ export default function StatusModal({ handleUpdatePost,onClose, visible, post = 
           </div>
         </div>
         <div className="flex justify-end">
-          <SubmitBtn busy={busy} disabled={busy}  type="submit" className="w-auto px-4 py-2">
+          <SubmitBtn
+            busy={busy}
+            disabled={busy}
+            type="submit"
+            className="w-auto px-4 py-2"
+          >
             Post
           </SubmitBtn>
         </div>

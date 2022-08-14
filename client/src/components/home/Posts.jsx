@@ -7,7 +7,7 @@ import LoadMoreBtn from "../LoadMoreBtn";
 import PostCard from "./post_card/PostCard";
 export default function Posts() {
   const { homePosts } = useSelector((state) => state);
-  const auth = useSelector((state) => state.user);
+  const {user:auth,socket:{ info: socket }} = useSelector((state) => state);
   const dispatch = useDispatch();
   const [load, setLoad] = useState(false);
   const handleLoadMore = async () => {
@@ -31,7 +31,7 @@ export default function Posts() {
   return (
     <div className="space-y-5 ">
       {homePosts.posts.map((post) => {
-        return <PostCard key={post._id} data={post} auth={auth} />;
+        return <PostCard socket={socket} key={post._id} data={post} auth={auth} />;
       })}
       {load ? (
         <ImSpinner3

@@ -4,18 +4,17 @@ import { FaRegComment } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 export default function PostThumb({ posts = [], result = 0 }) {
-  if (result === 0)
+  if (posts.length === 0)
     return (
       <h2 className="dark:text-dark-subtle font-semibold text-4xl text-center text-light-subtle mt-2">
         Không có bài viết!
       </h2>
     );
-
   return (
-    <div className="post__thumb__display w-full grid grid-cols-postThumb gap-2.5 overflow-hidden my-[15px] dark:bg-secondary bg-white drop-shadow">
+    <div className="post__thumb__display w-auto grid grid-cols-postThumb gap-2.5 overflow-hidden my-[15px]">
       {posts.map((post, index) => {
         return (
-          <Link to={`/post/${post._id}`} key={post._id}>
+          <Link to={`/post/${post._id}`} key={post._id} className='dark:bg-primary bg-white drop-shadow rounded overflow-hidden'>
             <div className=" min-w-[300px] h-[300px] w-full relative cursor-pointer overflow-hidden">
               <img
                 className="w-full h-full block "

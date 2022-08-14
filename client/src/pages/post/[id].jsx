@@ -11,7 +11,6 @@ export default function Post() {
   const [post, setPost] = useState(null);
   const { setLoading } = useNotify();
   const auth = useSelector((state) => state.user);
-  const { homePosts } = useSelector((state) => state);
 
   const handleUpdate = (data) => {
     setPost({...data})

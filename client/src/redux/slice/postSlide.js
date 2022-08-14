@@ -38,10 +38,12 @@ export const getPosts = createAsyncThunk(
 
 export const likePost = createAsyncThunk(
   "likePost",
-  async ({ auth, post }, { rejectWithValue }) => {
+  async ({ auth, post, socket, handleUpdatePost }, { rejectWithValue }) => {
     try {
       const newPost = { ...post, likes: [...post.likes, auth.profile] };
+      handleUpdatePost && handleUpdatePost(newPost);
       await patchDataApi(`posts/${post._id}/like`, {}, auth.token);
+      socket.emit("likePost", newPost);
       return newPost;
     } catch (error) {
       throw new Error(error.response.data?.msg);
@@ -51,13 +53,15 @@ export const likePost = createAsyncThunk(
 
 export const unLikePost = createAsyncThunk(
   "unLikePost",
-  async ({ auth, post }, { rejectWithValue }) => {
+  async ({ auth, post, socket, handleUpdatePost }, { rejectWithValue }) => {
     try {
       const newLikes = post.likes?.filter(
         (like) => like._id !== auth.profile._id
       );
       const newPost = { ...post, likes: [...newLikes] };
+      handleUpdatePost && handleUpdatePost(newPost);
       await patchDataApi(`posts/${post._id}/unlike`, {}, auth.token);
+      socket.emit("unLikePost", newPost);
       return newPost;
     } catch (error) {
       throw new Error(error.response.data?.msg);
@@ -67,7 +71,7 @@ export const unLikePost = createAsyncThunk(
 
 export const createComment = createAsyncThunk(
   "createComment",
-  async ({ auth, post, newComment }, { rejectWithValue }) => {
+  async ({ auth, post, newComment, socket }, { rejectWithValue }) => {
     try {
       const data = {
         ...newComment,
@@ -78,7 +82,9 @@ export const createComment = createAsyncThunk(
 
       const newData = { ...res.data.newComment, user: auth.profile };
       const newPost = { ...post, comments: [...post.comments, newData] };
-      return newPost;
+
+      socket.emit("createComment", newPost);
+      return { newPost, newData };
     } catch (error) {
       throw new Error(error.response.data?.msg);
     }
@@ -103,7 +109,7 @@ export const updateComment = createAsyncThunk(
 
 export const removeComment = createAsyncThunk(
   "removeComment",
-  async ({ post, comment, auth }, { rejectWithValue }) => {
+  async ({ post, comment, auth, socket }, { rejectWithValue }) => {
     try {
       const deleteArr = [
         ...post.comments.filter((r) => r.reply === comment._id),
@@ -117,8 +123,19 @@ export const removeComment = createAsyncThunk(
       await Promise.all(
         deleteArr.map(async (c) => {
           await deleteDataApi(`comment/${c._id}`, auth.token);
+          const msg = {
+            id: c._id,
+            text: comment.reply
+              ? "đã trả lời bình luận của bạn"
+              : "đã bình luận bài viết của bạn",
+            recipients: comment.reply ? [comment.tag._id] : [post.user._id],
+            url: `/post/${post._id}`,
+          };
+          socket.emit("deleteNotify", msg);
         })
       );
+
+      socket.emit("deleteComment", newPost);
       return newPost;
     } catch (error) {
       throw new Error(error.response.data?.msg);
@@ -172,8 +189,27 @@ export const deletePost = createAsyncThunk(
   "deletePost",
   async ({ auth, post }) => {
     try {
-      await deleteDataApi(`posts/${post._id}`,auth.token)
-      return post
+      await deleteDataApi(`posts/${post._id}`, auth.token);
+      return post;
+    } catch (error) {
+      throw new Error(error.response.data?.msg);
+    }
+  }
+);
+
+export const savePost = createAsyncThunk("savePost", async ({ auth, post }) => {
+  try {
+    await patchDataApi(`save-post/${post._id}`, null, auth.token);
+  } catch (error) {
+    throw new Error(error.response.data?.msg);
+  }
+});
+
+export const unSavePost = createAsyncThunk(
+  "unSavePost",
+  async ({ auth, post }) => {
+    try {
+      await patchDataApi(`unsave-post/${post._id}`, null, auth.token);
     } catch (error) {
       throw new Error(error.response.data?.msg);
     }
@@ -191,7 +227,6 @@ const postSlide = createSlice({
   reducers: {
     createPost(state, action) {
       const oldState = state.posts;
-      console.log(action.payload)
       state.posts = [action.payload, ...oldState];
     },
     updatePost(state, action) {
@@ -231,7 +266,7 @@ const postSlide = createSlice({
     },
     [createComment.fulfilled]: (state, action) => {
       const oldState = state.posts;
-      const newState = updateData(oldState, action.payload);
+      const newState = updateData(oldState, action.payload.newPost);
       state.posts = newState;
     },
     [updateComment.fulfilled]: (state, action) => {
@@ -255,10 +290,13 @@ const postSlide = createSlice({
       state.posts = newState;
     },
     [deletePost.fulfilled]: (state, action) => {
-      const newState = deleteData(state.posts,action.payload);
+      const newState = deleteData(state.posts, action.payload);
       state.posts = newState;
       state.result = state.result - 1;
-    }
+    },
+    [savePost.fulfilled]: (state, action) => {
+      console.log(action);
+    },
   },
 });
 

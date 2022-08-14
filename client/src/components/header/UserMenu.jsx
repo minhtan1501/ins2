@@ -107,20 +107,21 @@ const CreateOptions = ({ options, visible, onClose }) => {
 
 const Option = ({ children, onClick, Icon }) => {
   return (
-    <li className="user__menu-item
+    <li
+      className="user__menu-item
     text-sm py-2 px-4
     font-normal block w-full cursor-pointer
     whitespace-nowrap bg-transparent hover:bg-dark-subtle
     dark:text-white  border-b-[1px] dark:border-dark-subtle
     "
-onClick={onClick}>
-      
-        <div className=" flex justify-between items-center space-x-2">
-          <div>
-            <Icon size={20} />
-          </div>
-          <div className="font-semibold">{children}</div>
+      onClick={onClick}
+    >
+      <div className=" flex justify-between items-center space-x-2">
+        <div>
+          <Icon size={20} />
         </div>
+        <div className="font-semibold">{children}</div>
+      </div>
     </li>
   );
 };

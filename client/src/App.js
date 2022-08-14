@@ -11,11 +11,16 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import { getPosts } from "./redux/slice/postSlide";
 import { refreshToken } from "./redux/slice/userSlice";
+
+import { io } from "socket.io-client";
+import socketSlice from "./redux/slice/socketSlice";
+import SocketClient from "./SocketClient";
+import { getNotify } from "./redux/slice/notifySlide";
 function App() {
   const auth = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const isLogin = localStorage.getItem("firstLogin");
-  const timerId = useRef()
+  const timerId = useRef();
   const { setLoading, setNotify } = useNotify();
 
   useEffect(() => {
@@ -33,24 +38,31 @@ function App() {
       }
     };
     refresh_token();
+    const socket = io();
+
+    dispatch(socketSlice.actions.updateSocket(socket));
 
     timerId.current = setInterval(() => {
-      if(timerId) clearInterval(timerId);
+      if (timerId) clearInterval(timerId);
       refresh_token();
     }, 60 * 1000 * 10);
+
+    return () => {
+      clearInterval(timerId);
+      socket.close();
+    };
   }, []);
 
   // get posts
 
   useEffect(() => {
-    ( async() =>{
+    (async () => {
       try {
-        dispatch(getPosts(auth.token))
-      } catch (error) {
-        
-      }
-    })()
-  },[auth.token])
+        dispatch(getPosts(auth.token));
+        dispatch(getNotify({ token: auth.token }));
+      } catch (error) {}
+    })();
+  }, [auth.token]);
 
   useEffect(() => {
     if (auth.mode === "light") {
@@ -61,8 +73,8 @@ function App() {
 
   return (
     <>
-      {auth?.token ? <Header /> : null}
-
+      {auth?.token && <Header />}
+      {auth.token && <SocketClient />}
       <Routes>
         <Route path="/" element={auth?.token ? <Home /> : <Login />} />
         <Route path="/login" element={<Login />} />
@@ -83,6 +95,7 @@ function App() {
           element={isLogin ? <PageRender /> : <Navigate to="/" />}
         />
       </Routes>
+      <div className="mb-12"></div>
     </>
   );
 }

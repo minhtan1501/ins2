@@ -3,6 +3,7 @@ const { sendError } = require("../utils/helper");
 const cloudinary = require("../cloud");
 const { isValidObjectId } = require("mongoose");
 const Comments = require("../models/commentModel");
+const Users = require("../models/userModel");
 class APIfeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -11,7 +12,7 @@ class APIfeatures {
 
   paginating() {
     const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 3;
+    const limit = this.queryString.limit * 1 || 9;
     const skip = (page - 1) * limit;
     this.query = this.query.skip(skip).limit(limit);
     return this;
@@ -34,12 +35,13 @@ const postCtrl = {
       user: req.user._id,
     });
 
+    await newPost.save();
 
     res.status(200).json({
       msg: "Tạo post thành công",
       post: {
         ...newPost._doc,
-        user: req.user
+        user: req.user,
       },
     });
   },
@@ -50,9 +52,9 @@ const postCtrl = {
       }),
       req.query
     ).paginating();
-    const posts = features.query
+    const posts = await features.query
       .sort("-createdAt")
-      .populate("user likes", "avatar userName fullName")
+      .populate("user likes", "avatar userName fullName followers")
       .populate({
         path: "comments",
         populate: {
@@ -76,7 +78,6 @@ const postCtrl = {
   },
   uploadImg: async (req, res) => {
     let { file } = req;
-    console.log(file)
     if (!file) return sendError(res, "Hình ảnh rỗng");
     const { public_id, url } = await cloudinary.uploader.upload(file.path, {
       height: 500,
@@ -126,7 +127,7 @@ const postCtrl = {
       { new: true }
     );
 
-    if (!like) return sendError(res, "Bài viết không tồn tại")
+    if (!like) return sendError(res, "Bài viết không tồn tại");
 
     return res.status(200).json({ msg: "" });
   },
@@ -139,7 +140,7 @@ const postCtrl = {
       { new: true }
     );
 
-    if (!unlike) return sendError(res, "Bài viết không tồn tại!")
+    if (!unlike) return sendError(res, "Bài viết không tồn tại!");
 
     return res.status(200).json({ msg: "" });
   },
@@ -163,16 +164,13 @@ const postCtrl = {
         },
       });
     const counting = new APIfeatures(
-      Posts.find({
-        user: [...req.user.following, req.user._id],
-      }),
+      Posts.find({ user: req.params.id }),
       req.query
     ).counting();
 
     const result = await Promise.allSettled([posts, counting.query]);
     const p = result[0].status === "fulfilled" ? result[0].value : [];
     const count = result[1].status === "fulfilled" ? result[1].value : 0;
-
     res.status(200).json({ posts: p, result: count });
   },
   getPostById: async (req, res) => {
@@ -198,6 +196,7 @@ const postCtrl = {
     ).paginating();
 
     const posts = features.query.sort("-createdAt");
+
     const counting = new APIfeatures(
       Posts.find({
         user: { $nin: [...req.user.following, req.user._id] },
@@ -209,20 +208,67 @@ const postCtrl = {
     const p = result[0].status === "fulfilled" ? result[0].value : [];
     const count = result[1].status === "fulfilled" ? result[1].value : 0;
 
-
     res.status(200).json({ msg: "Thành công!", result: count, posts: p });
   },
   deletePost: async (req, res) => {
-    const post = await Posts.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    const post = await Posts.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
+    });
     if (!post) {
       return res.status(404).json({ msg: "Xóa bài viết thất bại!" });
     }
-    await Comments.deleteMany({ _id: { $in: post.comments } })
+    await Comments.deleteMany({ _id: { $in: post.comments } });
 
-    return res.status(200).json({ msg: "Xóa bài viết thành công!" });
+    return res.status(200).json({ post,msg: "Xóa bài viết thành công!" });
+  },
+  savePost: async (req, res) => {
+    const user = await Users.find({ _id: req.user_id, saved: req.params.id });
+    if (user.length) return sendError(res, "Bạn đã lưu bài viết này!");
 
+    const save = await Users.findByIdAndUpdate(
+      { _id: req.user._id },
+      {
+        $push: { saved: req.params.id },
+      },
+      { new: true }
+    );
 
-  }
+    if (!save) return sendError(res, "Người dùng không tồn tại");
+
+    return res.status(200).json({ msg: "" });
+  },
+  unSavePost: async (req, res) => {
+    const save = await Users.findOneAndUpdate(
+      { _id: req.user._id },
+      {
+        $pull: { saved: req.params.id },
+      },
+      { new: true }
+    );
+
+    if (!save) return sendError(res, "Người dùng không tồn tại");
+
+    return res.status(200).json({ msg: "" });
+  },
+  getSavePost: async (req, res) => {
+    const features = new APIfeatures(
+      Posts.find({ _id: { $in: req.user.saved } }),
+      req.query
+    ).paginating();
+    const posts = features.query.sort("-createdAt");
+
+    const counting = new APIfeatures(
+      Posts.find({ _id: { $in: req.user.saved } }),
+      req.query
+    ).counting();
+
+    const result = await Promise.allSettled([posts, counting.query]);
+    const p = result[0].status === "fulfilled" ? result[0].value : [];
+    const count = result[1].status === "fulfilled" ? result[1].value : 0;
+
+    res.status(200).json({ msg: "Thành công!", result: count, posts: p });
+  },
 };
 
 module.exports = postCtrl;

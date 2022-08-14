@@ -46,7 +46,8 @@ const userSchema = new mongoose.Schema(
       url:{type:String,default: "https://res.cloudinary.com/dtvwgsmrq/image/upload/v1656036453/samples/profilePic_gie4aj.png"},
       public_id:{type:String,default: ""}
     },
-    isVerify: {type:Boolean,default:false}
+    isVerify: {type:Boolean,default:false},
+    saved:  [{ type: mongoose.Types.ObjectId, ref: "post" }]
   },
   {
     timestamps: true,

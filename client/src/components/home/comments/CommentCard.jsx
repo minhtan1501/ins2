@@ -15,8 +15,17 @@ import LikeButton from "../post_card/LikeButton";
 import CommentMenu from "./CommentMenu";
 import InputComment from "../InputComment";
 
-export default function CommentCard({handleUpdatePost, children, comment, post, commentId }) {
-  const auth = useSelector((state) => state.user);
+export default function CommentCard({
+  handleUpdatePost,
+  children,
+  comment,
+  post,
+  commentId,
+}) {
+  const {
+    user: auth,
+    socket: { info: socket },
+  } = useSelector((state) => state);
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
   const [readMore, setReadMore] = useState(false);
@@ -59,7 +68,7 @@ export default function CommentCard({handleUpdatePost, children, comment, post, 
         const res = await dispatch(
           updateComment({ auth, comment, post, content })
         );
-        handleUpdatePost && handleUpdatePost(res.payload)
+        handleUpdatePost && handleUpdatePost(res.payload);
         unwrapResult(res);
         setOnEdit(false);
         setNotify("success", "Cập nhật thành công");
@@ -77,6 +86,17 @@ export default function CommentCard({handleUpdatePost, children, comment, post, 
     setOnReply({ ...comment, commentId });
   };
 
+  const handleRemove = async () => {
+    try {
+      const res = await dispatch(
+        removeComment({ post, comment, auth, socket })
+      );
+      unwrapResult(res);
+    } catch (error) {
+      setNotify("error", error);
+    }
+  };
+
   useEffect(() => {
     setContent(comment.content);
     if (comment.likes.find((like) => like._id === auth.profile._id)) {
@@ -88,14 +108,6 @@ export default function CommentCard({handleUpdatePost, children, comment, post, 
     opacity: comment._id ? 1 : 0.5,
     pointerEvents: comment._id ? "inherit" : "none",
   };
-  const handleRemove = async () => {
-    try {
-      const res = await dispatch(removeComment({post,comment,auth}))
-      unwrapResult(res);
-    } catch (error) {
-      setNotify('error',error)
-    }
-  }
 
   return (
     <div className="mt-1" style={styleCard}>

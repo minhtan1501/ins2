@@ -3,86 +3,102 @@ import { patchDataApi } from "../../api/userApi";
 import useNotify from "../../hooks/useNotify";
 import userSlice from "../../redux/slice/userSlice";
 import Avatar from "../Avatar";
-import Container from "../Container";
 import EditProfileModal from "../Modal/EditProfileModal";
 import FollowersModal from "../Modal/FollowersModal";
 import NotFound from "../NotFound";
 import CustomBtn from "./CustomBtn";
-export default function Info({ id, auth = {}, profile = {}, dispatch }) {
+export default function Info({
+  id,
+  socket,
+  handleUnFollow,
+  setProfile,
+  handleFollower,
+  auth = {},
+  profile = {},
+  dispatch,
+}) {
   const [follow, setFollow] = useState(false);
-  const [user, setUser] = useState({});
   const [editProfile, setEditProfile] = useState(false);
-  const { setNotify } = useNotify();
   const [followersModal, setFollowersModal] = useState(false);
   const [followingModal, setFollowingModal] = useState(false);
 
   const onSuccess = (data) => {
-    setUser({ ...data });
+    setProfile({ ...data });
   };
+  
+  const handleCloseFollowersModal = () =>{
+    setFollowersModal(false)
+  }
+  const handleCloseFollowingModal = () => {
+    setFollowingModal(false)
+  }
 
   // follow
 
-  const handleFollower = useCallback(async () => {
-    try {
-      const newUser = {
-        ...user,
-        followers: [...user.followers, auth.profile],
-      };
-      const newProfile = {
-        ...auth.profile,
-        following: [...auth.profile.following, user],
-      };
-      dispatch(userSlice.actions.updateProfile({ profile: newProfile }));
-      await patchDataApi(`user/${user._id}/follow`, null, auth.token);
-      setUser(newUser);
-    } catch (error) {
-      setNotify("error", error.response.data?.msg);
-    }
-  }, [auth.profile, user, auth.token]);
+  // const handleFollower = useCallback(async () => {
+  //   try {
+  //     const newUser = {
+  //       ...user,
+  //       followers: [...user.followers, auth.profile],
+  //     };
+  //     const newProfile = {
+  //       ...auth.profile,
+  //       following: [...auth.profile.following, user],
+  //     };
+  //     dispatch(userSlice.actions.updateProfile({ profile: newProfile }));
+  //     await patchDataApi(`user/${user._id}/follow`, null, auth.token);
+  //     socket.emit('follow', newProfile);
+  //     setUser(newUser);
+  //   } catch (error) {
+  //     setNotify("error", error.response.data?.msg);
+  //   }
+  // }, [auth.profile, user, auth.token]);
   // unfollow
-  const handleUnFollow = useCallback(async () => {
-    try {
-      const newUser = {
-        ...user,
-        followers: user.followers?.filter((u) => u?._id !== auth.profile?._id),
-      };
-      const newProfile = {
-        ...auth.profile,
-        following: auth.profile.following?.filter((a) => a?._id !== user._id),
-      };
-      dispatch(userSlice.actions.updateProfile({ profile: newProfile }));
-      setUser(newUser);
-      await patchDataApi(`user/${user._id}/unfollow`, null, auth.token);
-    } catch (error) {
-      setNotify("error", error.response.data?.msg);
-    }
-  }, [auth.profile, user, auth.token]);
+  // const handleUnFollow = useCallback(async () => {
+  //   try {
+  //     const newUser = {
+  //       ...user,
+  //       followers: user.followers?.filter((u) => u?._id !== auth.profile?._id),
+  //     };
+  //     const newProfile = {
+  //       ...auth.profile,
+  //       following: auth.profile.following?.filter((a) => a?._id !== user._id),
+  //     };
+  //     dispatch(userSlice.actions.updateProfile({ profile: newProfile }));
+  //     setUser(newUser);
+  //     await patchDataApi(`user/${user._id}/unfollow`, null, auth.token);
+  //   } catch (error) {
+  //     setNotify("error", error.response.data?.msg);
+  //   }
+  // }, [auth.profile, user, auth.token]);
 
   useEffect(() => {
-    setUser(profile);
-  }, [id, auth.profile, profile]);
-
-  useEffect(() => {
-    if (user) {
-      const found = user.followers?.find((f) => f._id === auth.profile?._id);
+    if (profile) {
+      const found = profile.followers?.find((f) => f._id === auth.profile?._id);
       if (found) {
         setFollow(true);
       } else {
         setFollow(false);
       }
     }
-  }, [user, auth.profile]);
+  }, [profile, auth.profile]);
+
+  useEffect(() =>{
+    if(!profile.followers?.length) handleCloseFollowersModal();
+    if(!profile.following?.length) handleCloseFollowingModal();
+  },[profile?.followers,profile?.following])
+
   return (
     <div className="flex justify-center">
-      {Object.keys(user).length ? (
-        <div className="flex justify-around w-full p-6 border-b-2 dark:border-dark-subtle items-center">
-          <Avatar url={user?.avatar?.url} size="supper" />
+      {Object.keys(profile).length ? (
+        <div className="flex justify-around w-full p-6 items-center">
+          <Avatar url={profile?.avatar?.url} size="supper" />
           <div className="min-w-[250px] max-w-[550px] w-full flex-1 mx-4">
             <div className="flex items-center flex-wrap">
               <h2 className="text-2xl font-light flex-[3] dark:text-dark-subtle">
-                {user.userName}
+                {profile.userName}
               </h2>
-              {auth.profile?._id === user._id ? (
+              {auth.profile?._id === profile._id ? (
                 <CustomBtn
                   className="dark:border-yellow-500 dark:text-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-black border-sky-500 hover:bg-sky-500 hover:text-white text-sky-500"
                   onClick={() => setEditProfile(true)}
@@ -91,7 +107,7 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
                 </CustomBtn>
               ) : !follow ? (
                 <CustomBtn
-                  className="text-sky-500 hover:bg-sky-500 border-sky-500 dark:hover:text-white dark:border-yellow-500 dark:hover:bg-yellow-500 dark:text-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-primary"
+                  className="dark:border-yellow-500 dark:text-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-black border-sky-500 hover:bg-sky-500 hover:text-white text-sky-500"
                   onClick={handleFollower}
                 >
                   Theo dõi
@@ -110,42 +126,42 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
               <span
                 className="text-sky-400 dark:text-yellow-500 hover:underline
                   text-sm cursor-pointer"
-                onClick={() => setFollowersModal(true)}
+                onClick={() => profile.followers?.length && setFollowersModal(true)}
               >
                 {" "}
-                {user.followers?.length} Người Theo dõi
+                {profile.followers?.length} Người Theo dõi
               </span>
               <span
-                onClick={() => setFollowingModal(true)}
+                onClick={() => profile.following?.length && setFollowingModal(true)}
                 className="text-sky-400 cursor-pointer dark:text-yellow-500 hover:underline text-sm"
               >
-                {user.following?.length} Theo dõi
+                {profile.following?.length} Theo dõi
               </span>
             </div>
 
             <h6 className="text-sm font-semibold dark:text-dark-subtle ">
-              {user.fullName}{" "}
+              {profile.fullName}{" "}
             </h6>
-            {user.mobile && (
+            {profile.mobile && (
               <span className="text-red-500 font-semibold text-sm">
-                Điện thoại: {user.mobile}
+                Điện thoại: {profile.mobile}
               </span>
             )}
             <p className="text-sm dark:text-dark-subtle light:text-light-subtle font-semibold">
-              {user.address}
+              {profile.address}
             </p>
-            <h6 className="dark:text-white font-semibold">{user.email}</h6>
+            <h6 className="dark:text-white font-semibold">{profile.email}</h6>
 
             <a
               className="text-sky-400 dark:text-yellow-500 hover:underline"
               target="_blank"
               rel="noreferrer"
-              href={user.website}
+              href={profile.website}
             >
-              {user.website}
+              {profile.website}
             </a>
             <div className=" break-words dark:text-dark-subtle text-light-subtle">
-              {user.story}
+              {profile.story}
             </div>
           </div>
         </div>
@@ -153,7 +169,7 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
         <NotFound />
       )}
       <EditProfileModal
-        user={user}
+        user={profile}
         visible={editProfile}
         onClose={() => setEditProfile(false)}
         onSuccess={onSuccess}
@@ -161,15 +177,17 @@ export default function Info({ id, auth = {}, profile = {}, dispatch }) {
       {followersModal && (
         <FollowersModal
           visible={followersModal}
-          onClose={() => setFollowersModal(false)}
-          user={user?.followers}
+          onClose={handleCloseFollowersModal}
+          user={profile?.followers}
+          socket={socket}
         />
       )}
       {followingModal && (
         <FollowersModal
           visible={followingModal}
-          onClose={() => setFollowingModal(false)}
-          user={user?.following}
+          onClose={handleCloseFollowingModal}
+          user={profile?.following}
+          socket={socket}
         />
       )}
     </div>

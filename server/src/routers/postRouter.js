@@ -20,10 +20,17 @@ router.post(
 );
 
 router.patch(`/posts/:id/like`, auth, postCtrl.likePost);
+
 router.patch(`/posts/:id/unlike`, auth, postCtrl.unLikePost);
 
 router.get(`/user_posts/:id`, auth, postCtrl.getUserPosts);
 
 router.get("/posts_discover", auth, postCtrl.getPostsDicover);
+
+router.patch("/save-post/:id", auth, postCtrl.savePost);
+
+router.patch("/unsave-post/:id", auth, postCtrl.unSavePost);
+
+router.get("/get-save-posts", auth, postCtrl.getSavePost);
 
 module.exports = router;
