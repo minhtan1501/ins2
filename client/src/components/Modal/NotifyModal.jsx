@@ -51,12 +51,12 @@ export default function NotifyModal({ visible, onClose }) {
               <Avatar url={msg.user?.avatar?.url} size="big" />
 
               <div className="mx-1 flex flex-col">
-                <div className="flex-1 space-x-1">
-                  <strong>{msg.user.userName}</strong>
+                <div className="flex-1 space-x-1 dark:text-dark-subtle">
+                  <strong className="dark:text-white">{msg.user.userName}</strong>
                   <span>{msg.text}</span>
                 </div>
                 {msg.content && (
-                  <small>{msg.content.slice(0, 20) + "..."}</small>
+                  <small className="dark:text-dark-subtle">{msg.content.slice(0, 20) + "..."}</small>
                 )}
               </div>
               <div className="w-[30px]">
@@ -64,7 +64,7 @@ export default function NotifyModal({ visible, onClose }) {
               </div>
             </Link>
             <small className="flex justify-between px-2">
-              <p>{moment(msg.createdAt).fromNow()}</p>
+              <p className='dark:text-dark-subtle'>{moment(msg.createdAt).fromNow()}</p>
 
               {!msg.isRead && (
                 <BsCircleFill size={10} className="text-sky-600" />
