@@ -8,5 +8,7 @@ router.delete("/notify/:id", auth, notifyCtrl.deleteNotify);
 
 router.get("/notifies", auth, notifyCtrl.getNotify); 
 
+router.patch('isread-notify/:id', auth, notifyCtrl.isRead);
+
 
 module.exports = router;

@@ -32,6 +32,16 @@ const notifyCtrl = {
       .populate("user", "avatar userName");
     return res.status(200).json({ notifies });
   },
+  isRead: async (req, res) => {
+    const notifies = await Notifies.findOneAndUpdate({_id: req.params.id},{
+      isRead:true
+    });
+    return res.status(200).json({ notifies });
+  },
+  deleteAllNotifies: async (req, res) => {
+    const notifies = await Notifies.deleteMany({recipients: req.user._id});
+    return res.status(200).json({notifies})
+  }
 };
 
 module.exports = notifyCtrl;
