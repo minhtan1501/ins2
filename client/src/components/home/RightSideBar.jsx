@@ -72,7 +72,7 @@ export default function RightSideBar() {
           ))}
         </div>
       )}
-      <div></div>
+      
     </div>
   );
 }

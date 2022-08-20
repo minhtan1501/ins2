@@ -11,7 +11,7 @@ import StoryFiled from "../formFiled/StoryFiled";
 import GenderFiled from "../formFiled/GenderFiled";
 import useNotify from "../../hooks/useNotify";
 import SubmitBtn from "../SubmitBtn";
-import { imageUpload } from "../../utils/imageUpload";
+import { imageUploadPost } from "../../utils/imageUpload";
 import { patchDataApi } from "../../api/userApi";
 import userSlice from "../../redux/slice/userSlice";
 export default function EditProfileModal({
@@ -92,7 +92,7 @@ export default function EditProfileModal({
       let media;
       console.log(e);
       setLoading(true);
-      if (e?.avatar) media = await imageUpload(e.avatar);
+      if (e?.avatar) media = await imageUploadPost(e.avatar);
       const res = await patchDataApi(
         "user",
         {

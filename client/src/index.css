@@ -121,6 +121,11 @@ input[type="file"]::-webkit-file-upload-button {
   cursor: pointer;
 }
 
+.chat__row{
+  display: grid;
+  grid-template-columns: 70%;
+  margin-bottom: 10px;
+}
 
 
 
@@ -196,3 +201,34 @@ input[type="file"]::-webkit-file-upload-button {
 }
 
 
+.you__message {
+  justify-content: end;
+  justify-items: end;
+}
+
+
+.other__message {
+  justify-content: start;
+  justify-items: start;
+}
+
+.you__message .chat__text{
+  background: #0048AA;
+  color: white;
+  border: 1px solid #0048AA;
+  border-radius: 14px 14px 0 14px;
+  padding:  10px;
+}
+
+.other__message .chat__text{
+  background: white;
+  color: #111;
+  border: 1px solid #ddd;
+  border-radius: 14px 14px 0 14px;
+  padding:  10px;
+}
+
+.messThumb{
+  overflow: auto;
+  grid-template-columns: repeat(auto-fill, minmax(70px,1fr));
+}

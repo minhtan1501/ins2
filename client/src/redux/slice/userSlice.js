@@ -68,6 +68,9 @@ const userSlice = createSlice({
         state.profile = action.payload.profile;
       }
     },
+    verifyEmail(state, action){
+      state.profile = {...state.profile, isVerify: true}
+    }
   },
   extraReducers: {
     [login.pending]: (state, action) => {},

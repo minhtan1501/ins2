@@ -22,5 +22,5 @@ export default function PageRender() {
       pageName = `${page}`;
     }
   }
-  return <div className="">{generatePage(pageName)}</div>;
+  return <>{generatePage(pageName)}</>;
 }

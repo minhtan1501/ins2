@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import useNotify from "../../hooks/useNotify";
 import { createNotify } from "../../redux/slice/notifySlide";
 import postSlide, { createComment } from "../../redux/slice/postSlide";
+import Picker from "emoji-picker-react";
+
 export default function InputComment({
   children,
   handleUpdatePost,
@@ -17,6 +19,8 @@ export default function InputComment({
     user: auth,
     socket: { info: socket },
   } = useSelector((state) => state);
+  const [openEmoji, setOpenEmoji] = useState(false);
+
   const { setNotify } = useNotify();
   const dispatch = useDispatch();
   const handleSubmit = async (e) => {
@@ -61,25 +65,49 @@ export default function InputComment({
     }
   };
 
+  const onEmojiClick = (e, obj) => {
+    setContent(pre => pre + obj.emoji)
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full dark:bg-[#3c3b3b] p-2 flex items-center bg-[#fbfbfb]"
-    >
-      {children}
-      <input
-        className="border-none outline-none bg-transparent dark:text-white flex-1 overflow-auto text-primary dark:placeholder-white"
-        type="text"
-        value={content}
-        placeholder="Bình luận..."
-        onChange={(e) => setContent(e.target.value)}
-      />
-      <button
-        type="submit"
-        className="text-sky-500 dark:text-yellow-500 font-semibold"
+    <>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full dark:bg-[#3c3b3b] p-2 flex items-center bg-[#fbfbfb]"
       >
-        Post
-      </button>
-    </form>
+        {children}
+        <input
+          onBlur={() => setOpenEmoji(false)}
+          onFocus={() => setOpenEmoji(false)}
+          className="border-none outline-none bg-transparent dark:text-white flex-1 overflow-auto text-primary dark:placeholder-white"
+          type="text"
+          value={content}
+          placeholder="Bình luận..."
+          onChange={(e) => setContent(e.target.value)}
+        />
+        <div
+          className="mr-2 hover:opacity-70 cursor-pointer"
+          onClick={() => setOpenEmoji((pre) => !pre)}
+        >
+          😊
+        </div>
+        <button
+          type="submit"
+          className="text-sky-500 dark:text-yellow-500 font-semibold"
+        >
+          Post
+        </button>
+      </form>
+      <div className="flex justify-end">
+
+      {openEmoji && (
+        <Picker
+        disableSearchBar ={true}
+          pickerStyle={{ width: "50%", height: "200px", boxShadow: "unset" }}
+          onEmojiClick={onEmojiClick}
+        />
+      )}
+      </div>
+    </>
   );
 }

@@ -83,7 +83,6 @@ const commentCtrl = {
       return sendError(res, "Xóa bình luận thất bại!");
     const comment = await Comments.findByIdAndDelete(req.params.id);
     if (!comment) return sendError(res, "Xóa bình luận thất bại!");
-    console.log(comment);
     await Posts.findOneAndUpdate(
       { _id: comment.postId },
       {

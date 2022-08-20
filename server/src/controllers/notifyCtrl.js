@@ -32,7 +32,7 @@ const notifyCtrl = {
       .populate("user", "avatar userName");
     return res.status(200).json({ notifies });
   },
-  isRead: async (req, res) => {
+  isReadNotifies: async (req, res) => {
     const notifies = await Notifies.findOneAndUpdate({_id: req.params.id},{
       isRead:true
     });

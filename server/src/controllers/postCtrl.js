@@ -78,11 +78,12 @@ const postCtrl = {
   },
   uploadImg: async (req, res) => {
     let { file } = req;
-    if (!file) return sendError(res, "Hình ảnh rỗng");
+    if (!file) return sendError(res, "File rỗng");
     const { public_id, url } = await cloudinary.uploader.upload(file.path, {
       height: 500,
       width: 500,
       folder: "instagram-clone",
+      resource_type: file.mimetype.startsWith("video") ? "video" : "image",
     });
 
     res.status(200).json({ public_id, url });
@@ -220,7 +221,7 @@ const postCtrl = {
     }
     await Comments.deleteMany({ _id: { $in: post.comments } });
 
-    return res.status(200).json({ post,msg: "Xóa bài viết thành công!" });
+    return res.status(200).json({ post, msg: "Xóa bài viết thành công!" });
   },
   savePost: async (req, res) => {
     const user = await Users.find({ _id: req.user_id, saved: req.params.id });

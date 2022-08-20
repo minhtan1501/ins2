@@ -12,10 +12,12 @@ import GenderFiled from "../formFiled/GenderFiled";
 import { register } from "../../redux/slice/userSlice";
 import useNotify from "../../hooks/useNotify";
 import { unwrapResult } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router-dom";
 
 export default function RegisterForm() {
   const dispatch = useDispatch();
-  const {setLoading,setNotify} = useNotify();
+  const { setLoading, setNotify } = useNotify();
+  const navigate = useNavigate();
   const schema = yup.object().shape({
     email: yup
       .string()
@@ -38,13 +40,10 @@ export default function RegisterForm() {
       .string()
       .required("Họ và tên không được bỏ trống")
       .trim()
-      .test(
-        "should has at least two words",
-        "Nhập ít nhất 2 từ",
-        (value) => {
-          return value.split(" ").length >= 2;
-        }
-      ).max(40,"Họ và tên không vượt quá 40 ký tự"),
+      .test("should has at least two words", "Nhập ít nhất 2 từ", (value) => {
+        return value.split(" ").length >= 2;
+      })
+      .max(40, "Họ và tên không vượt quá 40 ký tự"),
   });
   const { handleSubmit, formState, control } = useForm({
     mode: "onChange",
@@ -59,15 +58,19 @@ export default function RegisterForm() {
     resolver: yupResolver(schema),
   });
   const onSubmit = async (e) => {
-   try {
-    setLoading(true)
-     const res =  await dispatch(register(e))
-     unwrapResult(res)
-     setLoading(false)
-   } catch (error) {
-      setNotify('error',error);
-      setLoading(false)
-   }
+    try {
+      setLoading(true);
+      const res = await dispatch(register(e));
+      console.log(res);
+      unwrapResult(res);
+      setLoading(false);
+      navigate("/verification", {
+        state: { user: res.payload.profile_id, replace: true },
+      });
+    } catch (error) {
+      setNotify("error", error);
+      setLoading(false);
+    }
   };
   const { errors } = formState;
   return (
@@ -118,9 +121,12 @@ export default function RegisterForm() {
         </form>
         <div className="bg-white drop-shadow w-96 p-4 text-center rounded dark:bg-secondary">
           <span className="dark:text-dark-subtle text-light-subtle">
-          Đã có tài khoản!{" "}
-            </span> 
-          <CustomLink className="text-submit-btn dark:text-yellow-500" path="/login">
+            Đã có tài khoản!{" "}
+          </span>
+          <CustomLink
+            className="text-submit-btn dark:text-yellow-500"
+            path="/login"
+          >
             Đăng nhập
           </CustomLink>
         </div>

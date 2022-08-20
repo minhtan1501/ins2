@@ -1,5 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { deleteDataApi, getDataApi, postDataApi } from "../../api/userApi";
+import {
+  deleteDataApi,
+  getDataApi,
+  patchDataApi,
+  postDataApi,
+} from "../../api/userApi";
 
 export const createNotify = createAsyncThunk(
   "createNotify",
@@ -29,6 +34,25 @@ export const deleteNotify = createAsyncThunk(
         auth.token
       );
       socket.emit("deleteNotify", msg);
+    } catch (error) {}
+  }
+);
+
+export const isReadNotify = createAsyncThunk(
+  "isReadNotify",
+  async ({ auth, msg }) => {
+    try {
+      await patchDataApi(`isReadNotify/${msg._id}`, null, auth.token);
+    } catch (error) {}
+  }
+);
+
+export const deleteAllNotifies = createAsyncThunk(
+  "deleteAllNotifies",
+  async (token) => {
+    try {
+      const res = await deleteDataApi("deleteAllNotify", token);
+      return res;
     } catch (error) {}
   }
 );
@@ -64,6 +88,11 @@ const notifySlice = createSlice({
     updateNotify(state, action) {
       state.data = [action.payload, ...state.data];
     },
+    updateIsReadNotify(state, action) {
+      state.data = state.data.map((a) =>
+        a._id === action.payload._id ? action.payload : a
+      );
+    },
     deleteNotify(state, action) {
       state.data = [
         ...state.data.filter(
@@ -74,11 +103,17 @@ const notifySlice = createSlice({
         ),
       ];
     },
+    updateSound(state, action) {
+      state.sound = action.payload;
+    },
   },
   extraReducers: {
     [getNotify.fulfilled]: (state, action) => {
       state.data = action.payload?.notifies;
     },
+    [deleteAllNotifies.fulfilled]: (state, action) => {
+      state.data= []
+    }
   },
 });
 

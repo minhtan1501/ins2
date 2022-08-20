@@ -6,9 +6,10 @@ router.post("/notify", auth, notifyCtrl.createNotify);
 
 router.delete("/notify/:id", auth, notifyCtrl.deleteNotify);
 
-router.get("/notifies", auth, notifyCtrl.getNotify); 
+router.get("/notifies", auth, notifyCtrl.getNotify);
 
-router.patch('isread-notify/:id', auth, notifyCtrl.isRead);
+router.patch("/isReadNotify/:id", auth, notifyCtrl.isReadNotifies);
 
+router.delete("/deleteAllNotify", auth, notifyCtrl.deleteAllNotifies);
 
 module.exports = router;

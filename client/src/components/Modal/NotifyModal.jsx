@@ -1,19 +1,23 @@
+import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { BsBellFill, BsBellSlashFill, BsCircleFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import notifySlice, {
+  deleteAllNotifies,
+  isReadNotify,
+} from "../../redux/slice/notifySlide";
 import Avatar from "../Avatar";
-import moment from "moment";
-export default function NotifyModal({ visible, onClose }) {
+import ConfirmModal from "./ConfirmModal";
+export default function NotifyModal({ visible, onClose,handleDeleteAll }) {
   const { user: auth, notify } = useSelector((state) => state);
   const dispatch = useDispatch();
-  const [blur, setBlur] = useState(false);
   useEffect(() => {
     const handleClose = (e) => {
       if (!visible) return;
       const { parentElement, id = "" } = e.target;
       if (parentElement?.id === "notify-modal" || id === "notify-modal") return;
-        onClose()
+      onClose();
     };
 
     document.addEventListener("click", handleClose);
@@ -22,7 +26,21 @@ export default function NotifyModal({ visible, onClose }) {
       document.removeEventListener("click", handleClose);
     };
   }, [visible]);
-//   if (blur) onClose();
+
+  const handleSound = () => {
+    dispatch(notifySlice.actions.updateSound(!notify.sound));
+  };
+
+  const handleIsRead = async (msg) => {
+    try {
+      await dispatch(isReadNotify({ msg, auth }));
+      dispatch(
+        notifySlice.actions.updateIsReadNotify({ ...msg, isRead: true })
+      );
+    } catch (error) {}
+  };
+
+
   if (!visible) return;
   return (
     <div
@@ -32,9 +50,19 @@ export default function NotifyModal({ visible, onClose }) {
       <div id="notify-modal" className="flex justify-between items-center">
         <h3 className="dark:text-white font-semibold text-2xl">Thông báo</h3>
         {notify.sound ? (
-          <BsBellFill id="notify-modal" size={24} className="text-[crimson]" />
+          <BsBellFill
+            onClick={handleSound}
+            id="notify-modal"
+            size={24}
+            className="text-[crimson]"
+          />
         ) : (
-          <BsBellSlashFill id="notify-modal" size={24} className="text-[crimson]" />
+          <BsBellSlashFill
+            onClick={handleSound}
+            id="notify-modal"
+            size={24}
+            className="text-[crimson]"
+          />
         )}
       </div>
       <hr />
@@ -47,16 +75,26 @@ export default function NotifyModal({ visible, onClose }) {
       >
         {notify.data?.map((msg, index) => (
           <div className="px-2 my-3" key={index}>
-            <Link to={`${msg.url}`} className="flex items-center">
-              <Avatar url={msg.user?.avatar?.url} size="big" />
+            <Link
+              to={`${msg.url}`}
+              className="flex items-center"
+              onClick={() => handleIsRead(msg)}
+            >
+              <div>
+                <Avatar url={msg.user?.avatar?.url} size="big" />
+              </div>
 
               <div className="mx-1 flex flex-col">
                 <div className="flex-1 space-x-1 dark:text-dark-subtle">
-                  <strong className="dark:text-white">{msg.user.userName}</strong>
+                  <strong className="dark:text-white">
+                    {msg.user.userName}
+                  </strong>
                   <span>{msg.text}</span>
                 </div>
                 {msg.content && (
-                  <small className="dark:text-dark-subtle">{msg.content.slice(0, 20) + "..."}</small>
+                  <small className="dark:text-dark-subtle">
+                    {msg.content.slice(0, 20) + "..."}
+                  </small>
                 )}
               </div>
               <div className="w-[30px]">
@@ -64,7 +102,9 @@ export default function NotifyModal({ visible, onClose }) {
               </div>
             </Link>
             <small className="flex justify-between px-2">
-              <p className='dark:text-dark-subtle'>{moment(msg.createdAt).fromNow()}</p>
+              <p className="dark:text-dark-subtle">
+                {moment(msg.createdAt).fromNow()}
+              </p>
 
               {!msg.isRead && (
                 <BsCircleFill size={10} className="text-sky-600" />
@@ -75,8 +115,11 @@ export default function NotifyModal({ visible, onClose }) {
       </div>
       <hr />
       <div className="text-end text-red-600 ">
-        <span className="cursor-pointer">Xóa tất cả</span>
+        <span className="cursor-pointer" onClick={handleDeleteAll}>
+          Xóa tất cả
+        </span>
       </div>
+      
     </div>
   );
 }

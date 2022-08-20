@@ -5,6 +5,8 @@ import postSlide from "./slice/postSlide";
 import userSlice from "./slice/userSlice";
 import socketSlice from "./slice/socketSlice";
 import infoSlice from "./slice/infoSlice";
+import messageSlice from "./slice/messageSlice";
+import onlineSlice from "./slice/onlineSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +15,9 @@ export const store = configureStore({
     homePosts: postSlide.reducer,
     discover: discoverSlide.reducer,
     socket: socketSlice.reducer,
-    info: infoSlice.reducer
+    info: infoSlice.reducer,
+    message: messageSlice.reducer,
+    online: onlineSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

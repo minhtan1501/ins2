@@ -13,6 +13,8 @@ import { imageUploadPost } from "../../utils/imageUpload";
 import TextareaFiled from "../formFiled/TextareaFiled";
 import SubmitBtn from "../SubmitBtn";
 import ModalContainer from "./ModalContainer";
+import Picker from "emoji-picker-react";
+import { imageShow, videoShow } from "../../utils/mediaShow";
 export default function StatusModal({
   handleUpdatePost,
   onClose,
@@ -23,6 +25,7 @@ export default function StatusModal({
   const [stream, setStream] = useState(false);
   const [tracks, setTracks] = useState("");
   const [busy, setBusy] = useState(false);
+  const [openEmoji, setOpenEmoji] = useState(false);
 
   const videoRef = useRef();
   const refCanvas = useRef();
@@ -33,10 +36,11 @@ export default function StatusModal({
     socket: { info: socket },
   } = useSelector((state) => state);
   const { setNotify, setLoading } = useNotify();
+
   const schema = yup.object().shape({
     content: yup.string().required("Không được bỏ trống"),
   });
-  const { handleSubmit, formState, control, reset } = useForm({
+  const { handleSubmit, formState, control, reset, getValues } = useForm({
     defaultValues: {
       content: "",
     },
@@ -52,8 +56,8 @@ export default function StatusModal({
     files.forEach((file) => {
       if (!file) return (err = "File rỗng");
 
-      if (file.type !== "image/jpeg" && file.type !== "image/png") {
-        return (err = "Ảnh không đúng định dạng!");
+      if (file.size > 1024 * 1024 * 5) {
+        return (err = "Ảnh quá lớn!");
       }
       return newImages.push(file);
     });
@@ -62,6 +66,7 @@ export default function StatusModal({
     setImages((pre) => (newImages.length ? [...pre, ...newImages] : [...pre]));
     e.target.value = "";
   };
+
   // handle delete image
   const deleteImages = (index) => {
     const newArr = [...images];
@@ -160,7 +165,7 @@ export default function StatusModal({
       setBusy(false);
     } catch (error) {
       setBusy(false);
-    console.log(error);      
+      console.log(error);
       setNotify("error", error.response?.data?.msg);
       setLoading(false);
     }
@@ -173,9 +178,15 @@ export default function StatusModal({
     }
     return () => {
       setImages([]);
-      reset();
+      reset({ content: "" });
+      setOpenEmoji(false);
     };
   }, [visible]);
+
+
+  const onEmojiClick = (e, obj) => {
+    reset({ content: getValues("content") + obj.emoji });
+  };
 
   return (
     <ModalContainer visible={visible} onClose={onClose}>
@@ -200,6 +211,12 @@ export default function StatusModal({
             errors={errors}
             control={control}
           />
+          {openEmoji && (
+            <Picker
+              pickerStyle={{ width: "100%", boxShadow: "unset" }}
+              onEmojiClick={onEmojiClick}
+            />
+          )}
 
           <div className="place-items-center max-h-[250px] w-full overflow-y-auto space-y-2 custom-scroll-bar grid grid-cols-img gap-4">
             {images.map((i, index) => {
@@ -208,17 +225,21 @@ export default function StatusModal({
                   className="drop-shadow h-full w-full relative rounded overflow-hidden show-img"
                   key={index}
                 >
-                  <img
-                    className="block w-full max-h-[250px] object-fill"
-                    src={
-                      i.camera
-                        ? i.camera
-                        : i.url
-                        ? i.url
-                        : URL.createObjectURL(i)
-                    }
-                    alt=""
-                  />
+                  {i.camera ? (
+                    imageShow(i.camera)
+                  ) : i.url ? (
+                    <>
+                      {i.url.match(/video/i)
+                        ? videoShow(i.url)
+                        : imageShow(i.url)}
+                    </>
+                  ) : (
+                    <>
+                      {i.type.match(/video/i)
+                        ? videoShow(URL.createObjectURL(i))
+                        : imageShow(URL.createObjectURL(i))}
+                    </>
+                  )}
                   <span className="absolute inset-0 flex justify-center items-center dark:bg-secondary opacity-70 bg-white">
                     <BsTrash
                       onClick={() => deleteImages(index)}
@@ -251,7 +272,7 @@ export default function StatusModal({
             </div>
           )}
 
-          <div className="flex justify-center ">
+          <div className="flex justify-center cursor-pointer ">
             {stream ? (
               <AiFillCamera
                 size={24}
@@ -262,22 +283,25 @@ export default function StatusModal({
               <>
                 <AiFillCamera
                   size={24}
-                  className="cursor-pointer dark:text-white hover:opacity-70"
+                  className=" dark:text-white hover:opacity-70"
                   onClick={handleStream}
                 />
                 <div className="overflow-hidden relative mx-2">
-                  <BsFillImageFill
-                    size={24}
-                    className="cursor-pointer dark:text-white "
-                  />
+                  <BsFillImageFill size={24} className=" dark:text-white " />
                   <input
                     onChange={handleChangeImages}
                     className="absolute inset-0 opacity-0 "
                     type="file"
                     name="file"
                     multiple={true}
-                    accept="image/*"
+                    accept="image/*,video/*"
                   />
+                </div>
+                <div
+                  className="hover:opacity-70"
+                  onClick={() => setOpenEmoji((pre) => !pre)}
+                >
+                  😊
                 </div>
               </>
             )}

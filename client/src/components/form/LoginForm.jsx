@@ -76,7 +76,7 @@ export default function LoginForm() {
             <div className="flex-1 bg-[#dbdbdb] h-[1px]"></div>
           </div>
           <div className="flex justify-center">
-            <CustomLink className="text-[12px] text-[#00376b] dark:text-yellow-400" path="/reset">
+            <CustomLink className="text-[12px] text-[#00376b] dark:text-yellow-400" path="/forgetpassword">
               Quên mật khẩu?
             </CustomLink>
           </div>

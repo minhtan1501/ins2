@@ -18,7 +18,12 @@ export default function Carousel({ images }) {
       {images?.map((image, index) => {
         return (
           <SwiperSlide key={index}>
-            <img className='w-full h-full ' src={image?.url} alt=" "/>
+            {
+              image.url.endsWith('mp4') ? 
+              <video controls className='w-full h-full ' src={image?.url} alt=" "/> :
+              <img className='w-full h-full ' src={image?.url} alt=" "/> 
+
+            }
           </SwiperSlide>
         );
       })}

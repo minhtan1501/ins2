@@ -85,6 +85,7 @@ const authCtrl = {
   },
   verifyEmail: async (req, res) => {
     const { otp, userId } = req.body;
+    console.log({ otp, userId });
     if (!isValidObjectId(userId))
       return sendError(res, "Mã người dùng không hợp lệ!");
 
@@ -101,6 +102,8 @@ const authCtrl = {
     user.isVerify = true;
 
     await user.save();
+
+    await EmailVerificationToken.findByIdAndDelete(token._id)
 
     const refresh_token = createRefreshToken({ id: user._id });
     res.cookie("refreshtoken", refresh_token, {
@@ -124,7 +127,6 @@ const authCtrl = {
     if (user.isVerify) return sendError(res, "Người dùng đã được xác nhận!");
 
     const token = await EmailVerificationToken.findOne({ owner: userId });
-
     if (token) {
       const timeAgo = Date.now() - new Date(token.createdAt);
       return sendError(
@@ -137,12 +139,12 @@ const authCtrl = {
 
     const otp = generateOTP();
 
-    await newUser.save();
-    await EmailVerificationToken.create({ owner: newUser._id, token: otp });
+    const email = new EmailVerificationToken({ owner: user._id, token: otp });
+    email.save();
 
     await transport.sendMail({
       from: "verification@t&t.com",
-      to: newUser.email,
+      to: user.email,
       subject: "Email Xác Thực",
       html: verifyEmail(otp),
     });
@@ -172,7 +174,7 @@ const authCtrl = {
 
     const token = await generateRandomByte();
 
-    const string = `http://localhost:3000/auth/rest-password?token=${token}&id=${user._id}`;
+    const string = `http://localhost:3000/rest-password?token=${token}&id=${user._id}`;
 
     await transport.sendMail({
       from: "verification@t&t.com",
@@ -181,7 +183,9 @@ const authCtrl = {
       html: resetPassword(string),
     });
 
-    await PasswordVerificationToken.create({ owner: user._id, token });
+    const pass = new PasswordVerificationToken({ owner: user._id, token })
+    
+    await pass.save();
 
     return res
       .status(200)

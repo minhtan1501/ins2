@@ -25,7 +25,6 @@ const userCtrl = {
   updateUser: async (req, res) => {
     const { avatar, fullName, mobile, address, story, website, gender } =
       req.body;
-    console.log(avatar);
 
     const user = await User.findByIdAndUpdate(
       { _id: req.user._id },

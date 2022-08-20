@@ -5,14 +5,13 @@ import {
   AiOutlineCompass,
   AiOutlineHeart,
   AiOutlineHome,
-  AiOutlineSearch,
+  AiOutlineSearch
 } from "react-icons/ai";
 import { MdFavorite, MdNearMe, MdOutlineNearMe } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import userSlice, { logout } from "../../redux/slice/userSlice";
 import NotifyModal from "../Modal/NotifyModal";
-import SearchModal from "../Modal/SearchModal";
 import UserMenu from "./UserMenu";
 const navLink = [
   {
@@ -35,17 +34,11 @@ const navLink = [
   },
 ];
 
-const notify = {
-  label: "Thông báo",
-  Icon: AiOutlineHeart,
-  Active: MdFavorite,
-  path: "/notify",
-};
-
-export default function Menu({ openModalSearch }) {
+export default function Menu({ openModalSearch,handleDeleteAll }) {
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [visibleNotifyModal, setVisibleNotifyModal] = useState(false);
   const { user, notify } = useSelector((state) => state);
   const onProfile = () => {
@@ -55,6 +48,7 @@ export default function Menu({ openModalSearch }) {
   const handleLogout = async () => {
     try {
       await dispatch(logout());
+      navigate("/")
     } catch (error) {}
   };
 
@@ -62,14 +56,20 @@ export default function Menu({ openModalSearch }) {
     dispatch(userSlice.actions.changeMode());
   };
 
-  const handleOpenModalNotify = (e) =>{
-    e.stopPropagation()
+  const handleOpenModalNotify = (e) => {
+    e.stopPropagation();
     setVisibleNotifyModal(true);
+  };
+
+  const handleCloseModalNotify = () => {
+    setVisibleNotifyModal(false);
+  };
+
+  const countIsRead = (data = []) =>{
+    const count = data.filter(d => d.isRead === false);
+    return count.length
   }
 
-  const handleCloseModalNotify = () =>{
-    setVisibleNotifyModal(false);
-  }
   return (
     <>
       <div className="flex items-center space-x-5 relative">
@@ -91,20 +91,32 @@ export default function Menu({ openModalSearch }) {
         })}
         <div className="relative cursor-pointer">
           {visibleNotifyModal ? (
-            <MdFavorite size={24} className="dark:text-white"  onClick={handleCloseModalNotify}/>
+            <MdFavorite
+              size={24}
+              className="dark:text-white"
+              onClick={handleCloseModalNotify}
+            />
           ) : (
-            <AiOutlineHeart size={24} className="dark:text-white"  onClick={handleOpenModalNotify}/>
+            <AiOutlineHeart
+              size={24}
+              className="dark:text-white"
+              onClick={handleOpenModalNotify}
+            />
           )}
           <p className=" select-none absolute top-0 right-[-5px] -translate-y-1/2 text-white  px-[5px] text-sm rounded-full font-semibold bg-[crimson]">
-            {notify.data?.length
-              ? notify.data.length > 5
+            {countIsRead(notify.data)
+              ? countIsRead(notify.data) > 5
                 ? "5+"
-                : notify.data.length
+                : countIsRead(notify.data)
               : null}
           </p>
         </div>
-        <NotifyModal visible={visibleNotifyModal} onClose={handleCloseModalNotify}/>
-
+        <NotifyModal
+          handleDeleteAll={handleDeleteAll}
+          visible={visibleNotifyModal}
+          onClose={handleCloseModalNotify}
+        />
+       
         <UserMenu
           onChangeTheme={handleOnChangeTheme}
           onLogout={handleLogout}
