@@ -270,6 +270,30 @@ const postCtrl = {
 
     res.status(200).json({ msg: "Thành công!", result: count, posts: p });
   },
+  getPostByAdmin: async (req, res) => {
+    const posts = await Posts.find({})
+      .sort("-createdAt")
+      .populate("user likes", "avatar userName fullName followers")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user likes",
+          select: "-password",
+        },
+      });
+    return res.status(200).json({ posts });
+  },
+  deletePostByAdmin: async (req, res) => {
+    const post = await Posts.findOneAndDelete({
+      _id: req.params.id,
+    });
+    if (!post) {
+      return res.status(404).json({ msg: "Xóa bài viết thất bại!" });
+    }
+    await Comments.deleteMany({ _id: { $in: post.comments } });
+
+    return res.status(200).json({ post, msg: "Xóa bài viết thành công!" });
+  }
 };
 
 module.exports = postCtrl;

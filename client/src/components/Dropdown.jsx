@@ -40,7 +40,7 @@ export default function Dropdown({ options = [], Icon }) {
                         "block px-4 py-2 text-sm"
                       )}
                     >
-                      <Icon size={24} />
+                      {Icon && <Icon size={24} />}
                       <p>{title}</p>
                     </div>
                   )}

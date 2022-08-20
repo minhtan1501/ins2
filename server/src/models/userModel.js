@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-
 const userSchema = new mongoose.Schema(
   {
     fullName: {
@@ -43,27 +42,30 @@ const userSchema = new mongoose.Schema(
     followers: [{ type: mongoose.Types.ObjectId, ref: "user" }],
     following: [{ type: mongoose.Types.ObjectId, ref: "user" }],
     avatar: {
-      url:{type:String,default: "https://res.cloudinary.com/dtvwgsmrq/image/upload/v1656036453/samples/profilePic_gie4aj.png"},
-      public_id:{type:String,default: ""}
+      url: {
+        type: String,
+        default:
+          "https://res.cloudinary.com/dtvwgsmrq/image/upload/v1656036453/samples/profilePic_gie4aj.png",
+      },
+      public_id: { type: String, default: "" },
     },
-    isVerify: {type:Boolean,default:false},
-    saved:  [{ type: mongoose.Types.ObjectId, ref: "post" }]
+    isVerify: { type: Boolean, default: false },
+    isBanner: { type: Boolean, default: false },
+    saved: [{ type: mongoose.Types.ObjectId, ref: "post" }],
   },
   {
     timestamps: true,
   }
 );
 
-
-userSchema.pre('save', async function (){
-  if(this.isModified('password')){
-    this.password = await bcrypt.hash(this.password,12);
+userSchema.pre("save", async function () {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 12);
   }
-})
+});
 
-userSchema.methods.comparePassword = async function (password){
-  return await bcrypt.compare(password, this.password)
-}
-
+userSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 module.exports = mongoose.model("user", userSchema);

@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const postCtrl = require("../controllers/postCtrl");
-const { auth } = require("../middleware/auth");
+const { auth, authAdmin } = require("../middleware/auth");
 const { uploadImage } = require("../middleware/multer");
 
 router
@@ -32,5 +32,9 @@ router.patch("/save-post/:id", auth, postCtrl.savePost);
 router.patch("/unsave-post/:id", auth, postCtrl.unSavePost);
 
 router.get("/get-save-posts", auth, postCtrl.getSavePost);
+
+router.get("/get-post-by-admin", auth, authAdmin, postCtrl.getPostByAdmin);
+
+router.delete("/delete-post/:id", auth, authAdmin, postCtrl.deletePostByAdmin);
 
 module.exports = router;

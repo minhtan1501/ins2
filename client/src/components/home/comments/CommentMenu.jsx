@@ -2,11 +2,17 @@ import React from "react";
 import Dropdown from "../../Dropdown";
 import { IoMdMore } from "react-icons/io";
 import { AiFillEdit, AiFillDelete } from "react-icons/ai";
-export default function CommentMenu({ comment, post,handleRemove, auth,setOnEdit }) {
+export default function CommentMenu({
+  handleRemoveCommentByAd,
+  comment,
+  post,
+  handleRemove,
+  auth,
+  setOnEdit,
+}) {
   const opiton1 = [
     { title: "Chỉnh sửa", Icon: AiFillEdit, onClick: setOnEdit },
     { title: "Xóa", Icon: AiFillDelete, onClick: handleRemove },
-
   ];
   const opiton2 = [{ title: "Xóa", Icon: AiFillDelete, onClick: null }];
 
@@ -22,12 +28,25 @@ export default function CommentMenu({ comment, post,handleRemove, auth,setOnEdit
 
   return (
     <div className="">
-      {(post.user._id === auth.profile.id ||
-        comment.user._id === auth.profile._id) && (
+      {auth.profile.role === "admin" ? (
         <Dropdown
-          options={checkPermission(comment, post, auth)}
+          options={[
+            {
+              title: "Xóa",
+              Icon: AiFillDelete,
+              onClick: handleRemoveCommentByAd,
+            },
+          ]}
           Icon={IoMdMore}
         />
+      ) : (
+        (post.user._id === auth.profile.id ||
+          comment.user._id === auth.profile._id) && (
+          <Dropdown
+            options={checkPermission(comment, post, auth)}
+            Icon={IoMdMore}
+          />
+        )
       )}
     </div>
   );

@@ -10,6 +10,7 @@ export default function CardHeader({
   post,
   handleDeletePost,
   openModalStatus,
+  handleDeletePostByAdmin,
   handleCopyLink,
 }) {
   const { profile } = useSelector((state) => state.user);
@@ -37,6 +38,14 @@ export default function CardHeader({
     },
   ];
 
+  const option3 = [
+    {
+      title: "Xóa",
+      Icon: AiFillDelete,
+      onClick: handleDeletePostByAdmin,
+    },
+  ];
+
   return (
     <div className="flex justify-between ">
       <div className="flex space-x-2 p-2">
@@ -56,7 +65,9 @@ export default function CardHeader({
         </div>
       </div>
       <div className="relative z-[3]">
-        {profile._id === post.user?._id ? (
+        {profile.role === "admin" ? (
+          <DropdownRender options={option3} />
+        ) : profile._id === post.user?._id ? (
           <DropdownRender options={options} />
         ) : (
           <DropdownRender options={option2} />

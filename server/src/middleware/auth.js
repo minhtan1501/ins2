@@ -11,7 +11,7 @@ exports.auth = async (req, res, next) => {
 
     if (!decoded) return sendError(res, "Xác thực không hợp lệ!");
 
-    const user = await User.findOne({_id:decoded.id});
+    const user = await User.findOne({ _id: decoded.id });
 
     req.user = user;
     next();
@@ -20,3 +20,13 @@ exports.auth = async (req, res, next) => {
   }
 };
 
+exports.authAdmin = async (req, res, next) => {
+  try {
+    if (!req.user.role === "admin")
+      return sendError(res, "Chưa được ủy quyền truy cập");
+
+    next();
+  } catch (error) {
+    return sendError(res, error.message || error);
+  }
+};

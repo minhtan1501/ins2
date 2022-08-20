@@ -52,13 +52,11 @@ const authCtrl = {
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
-    return res
-      .status(200)
-      .json({
-        msg: "Đăng kí thành công!",
-        token: access_token,
-        profile: newUser,
-      });
+    return res.status(200).json({
+      msg: "Đăng kí thành công!",
+      token: access_token,
+      profile: newUser,
+    });
   },
   login: async (req, res) => {
     const { email, password } = req.body;
@@ -68,6 +66,8 @@ const authCtrl = {
     const check = await user.comparePassword(password);
 
     if (!check) return sendError(res, "Mật khẩu không đúng");
+
+    if(user.isBanner) return sendError(res, "Tài khoản của bạn đã bị khóa");
 
     const refresh_token = createRefreshToken({ id: user._id });
     const access_token = createAccessToken({ id: user._id });
@@ -103,7 +103,7 @@ const authCtrl = {
 
     await user.save();
 
-    await EmailVerificationToken.findByIdAndDelete(token._id)
+    await EmailVerificationToken.findByIdAndDelete(token._id);
 
     const refresh_token = createRefreshToken({ id: user._id });
     res.cookie("refreshtoken", refresh_token, {
@@ -174,7 +174,7 @@ const authCtrl = {
 
     const token = await generateRandomByte();
 
-    const string = `http://localhost:3000/rest-password?token=${token}&id=${user._id}`;
+    const string = `http://localhost:3000/resetpassword?token=${token}&id=${user._id}`;
 
     await transport.sendMail({
       from: "verification@t&t.com",
@@ -183,8 +183,8 @@ const authCtrl = {
       html: resetPassword(string),
     });
 
-    const pass = new PasswordVerificationToken({ owner: user._id, token })
-    
+    const pass = new PasswordVerificationToken({ owner: user._id, token });
+
     await pass.save();
 
     return res
@@ -209,7 +209,7 @@ const authCtrl = {
     if (!isMatched)
       return sendError(res, "Truy cập trái phép, yêu cầu không hợp lệ");
 
-    return res.status(200).json({ msg: "Truy cập hợp lệ" });
+    return res.status(200).json({ msg: "Truy cập hợp lệ", valid: true });
   },
   resetPassword: async (req, res) => {
     const { password, userId } = req.body;
@@ -225,6 +225,8 @@ const authCtrl = {
     user.password = password;
 
     await user.save();
+
+    await PasswordVerificationToken.findOneAndDelete({ owner: userId });
 
     return res.status(200).json({ msg: "Mật khẩu thay đổi thành công" });
   },

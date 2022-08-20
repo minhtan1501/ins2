@@ -17,6 +17,8 @@ import socketSlice from "./redux/slice/socketSlice";
 import SocketClient from "./SocketClient";
 import { getNotify } from "./redux/slice/notifySlide";
 import ForgetPassword from "./pages/forgetpassword";
+import Verification from "./pages/verification";
+import AdminNavigator from "./admin/AdminNavigator";
 function App() {
   const auth = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -57,12 +59,13 @@ function App() {
 
   // get posts
 
+
   useEffect(() => {
     (async () => {
       try {
         dispatch(getPosts(auth.token));
         dispatch(getNotify({ token: auth.token }));
-      } catch (error) { }
+      } catch (error) {}
     })();
   }, [auth.token]);
 
@@ -90,22 +93,36 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // if (auth.profile &&  !auth.profile.isVerify){
-    //   return navigate("/verification", {
-    //     state: { user: auth.profile._id, replace: true },
-    //   });
-
-    // }
-  }, [auth.profile, navigate]);
+    if (auth.profile?.token && !auth.profile.isVerify) {
+      return navigate("/verification", {
+        state: { user: auth.profile._id, replace: true },
+      });
+    }
+  }, [auth.profile, auth.profile?.isVerify, navigate]);
+ 
+  if(auth.profile.role ==='admin'){
+    return <AdminNavigator/>
+  }
+  
 
   return (
     <>
       {auth?.token && <Header />}
       {auth.token && <SocketClient />}
       <Routes>
-      <Route path="/resetpassword" element={auth?.token ? <Home /> : <ResetPassword />} />
+        <Route
+          path="/resetpassword"
+          element={auth?.token ? <Navigate to="/" /> : <ResetPassword />}
+        />
+        <Route
+          path="/verification"
+          element={auth.profile?.isVerify ? <Navigate to="/" /> : <Verification />}
+        />
 
-        <Route path="/forgetpassword" element={auth?.token ? <Home /> : <ForgetPassword />} />
+        <Route
+          path="/forgetpassword"
+          element={auth?.token ? <Navigate to="/" /> : <ForgetPassword />}
+        />
         <Route path="/" element={auth?.token ? <Home /> : <Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

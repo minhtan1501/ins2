@@ -14,6 +14,7 @@ import Avatar from "../../Avatar";
 import LikeButton from "../post_card/LikeButton";
 import CommentMenu from "./CommentMenu";
 import InputComment from "../InputComment";
+import { deleteDataApi } from "../../../api/userApi";
 
 export default function CommentCard({
   handleUpdatePost,
@@ -21,6 +22,7 @@ export default function CommentCard({
   comment,
   post,
   commentId,
+  updateCommentByAd,
 }) {
   const {
     user: auth,
@@ -109,6 +111,25 @@ export default function CommentCard({
     pointerEvents: comment._id ? "inherit" : "none",
   };
 
+  const handleRemoveCommentByAd = async () => {
+    try {
+      const deleteArr = [
+        ...post.comments.filter((r) => r.reply === comment._id),
+        comment,
+      ];
+      const newComment = post.comments.filter((c) => {
+        return !deleteArr.find((da) => c._id === da._id);
+      });
+      const newPost = { ...post, comments: newComment };
+      await Promise.all(
+        deleteArr.map(async (c) => {
+          await deleteDataApi(`comment/${c._id}`, auth.token);
+        })
+      );
+      updateCommentByAd && updateCommentByAd(newPost);
+    } catch (error) {}
+  };
+
   return (
     <div className="mt-1" style={styleCard}>
       <div className="dark:bg-[#3c3c3c] p-2 rounded bg-gray-50">
@@ -168,6 +189,7 @@ export default function CommentCard({
                 auth={auth}
                 setOnEdit={() => setOnEdit(true)}
                 handleRemove={handleRemove}
+                handleRemoveCommentByAd={handleRemoveCommentByAd}
               />
               <div className="-translate-y-1">
                 <LikeButton

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InputFiled from "../components/formFiled/InputFiled";
 import CustomLink from "../components/CustomLink";
 import useNotify from "../hooks/useNotify";
@@ -10,6 +10,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { postDataApi } from "../api/userApi";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 function ForgetPassword() {
   const schema = yup.object().shape({
     email: yup
@@ -29,6 +31,8 @@ function ForgetPassword() {
   const { setNotify } = useNotify();
   const [loading, setLoading] = useState(false);
 
+  const { user: auth } = useSelector((state) => state);
+  const navigate = useNavigate();
   const handleOnSubmit = async (e) => {
     try {
       setLoading(true);
@@ -42,6 +46,13 @@ function ForgetPassword() {
     }
   };
   const { errors } = formState;
+
+  useEffect(() => {
+    if (auth.token) {
+      return navigate('/');
+    }
+  }, [auth.token]);
+
   return (
     <FormContainer>
       <Container className="space-y-2">
@@ -59,7 +70,9 @@ function ForgetPassword() {
             label="Email"
             errors={errors}
           />
-          <SubmitBtn disabled={loading} type="submit" busy={loading}>Khôi phục</SubmitBtn>
+          <SubmitBtn disabled={!formState.isValid} type="submit" busy={loading}>
+            Khôi phục
+          </SubmitBtn>
           <div className="flex justify-between">
             <CustomLink path="/register">Đăng ký</CustomLink>
             <CustomLink path="/login">Đăng nhập</CustomLink>

@@ -2,6 +2,7 @@ import { unwrapResult } from "@reduxjs/toolkit";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { deleteDataApi } from "../../../api/userApi";
 import useNotify from "../../../hooks/useNotify";
 import { deleteNotify } from "../../../redux/slice/notifySlide";
 import { deletePost } from "../../../redux/slice/postSlide";
@@ -14,7 +15,7 @@ import CardBody from "./CardBody";
 import CardFooter from "./CardFooter";
 import CardHeader from "./CardHeader";
 
-export default function PostCard({ data, handleUpdatePost, auth, socket }) {
+export default function PostCard({ updateUiPost,data,handleDeletePostByAd, handleUpdatePost, auth, socket }) {
   const navigate = useNavigate();
   const [visibleModalStatus, setVisibleModalStatus] = useState(false);
   const [post, setPost] = useState({});
@@ -59,11 +60,23 @@ export default function PostCard({ data, handleUpdatePost, auth, socket }) {
     navigator.clipboard.writeText(`${BASE_URL}/post/${data._id}`);
   };
 
+  const handleDeletePostByAdmin = async () => {
+    try {
+      const res = await deleteDataApi(`delete-post/${data._id}`,auth.token)
+      handleDeletePostByAd && handleDeletePostByAd(res.data.post)
+    } catch (error) {
+      
+    }
+  }
+  const updateCommentByAd = (newPost) =>{
+    updateUiPost(newPost)
+  }
   return (
     <div className="mt-0">
       <div className="dark:bg-secondary rounded dark:drop-shadow-xl shadow bg-white ">
         <CardHeader
           handleDeletePost={handleOpenModalCf}
+          handleDeletePostByAdmin={handleDeletePostByAdmin}
           post={data}
           openModalStatus={openModalStatus}
           handleCopyLink={handleCopyLink}
@@ -71,7 +84,7 @@ export default function PostCard({ data, handleUpdatePost, auth, socket }) {
         <CardBody post={data} />
         <CardFooter post={data} handleUpdatePost={handleUpdatePost} />
 
-        <Comments post={data} handleUpdatePost={handleUpdatePost} />
+        <Comments updateCommentByAd={updateCommentByAd} post={data} handleUpdatePost={handleUpdatePost} />
         <InputComment post={data} handleUpdatePost={handleUpdatePost} />
       </div>
       <StatusModal
