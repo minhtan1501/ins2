@@ -59,7 +59,7 @@ function ForgetPassword() {
             label="Email"
             errors={errors}
           />
-          <SubmitBtn type="submit" busy={loading}>Khôi phục</SubmitBtn>
+          <SubmitBtn disabled={loading} type="submit" busy={loading}>Khôi phục</SubmitBtn>
           <div className="flex justify-between">
             <CustomLink path="/register">Đăng ký</CustomLink>
             <CustomLink path="/login">Đăng nhập</CustomLink>

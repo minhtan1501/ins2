@@ -11,7 +11,7 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import { getPosts } from "./redux/slice/postSlide";
 import { refreshToken } from "./redux/slice/userSlice";
-
+import ResetPassword from "./pages/resetpassword";
 import { io } from "socket.io-client";
 import socketSlice from "./redux/slice/socketSlice";
 import SocketClient from "./SocketClient";
@@ -62,7 +62,7 @@ function App() {
       try {
         dispatch(getPosts(auth.token));
         dispatch(getNotify({ token: auth.token }));
-      } catch (error) {}
+      } catch (error) { }
     })();
   }, [auth.token]);
 
@@ -96,14 +96,16 @@ function App() {
     //   });
 
     // }
-  }, [auth.profile,navigate]);
+  }, [auth.profile, navigate]);
 
   return (
     <>
       {auth?.token && <Header />}
       {auth.token && <SocketClient />}
       <Routes>
-      <Route path="/forgetpassword" element={auth?.token ? <Home /> : <ForgetPassword/>} />
+      <Route path="/resetpassword" element={auth?.token ? <Home /> : <ResetPassword />} />
+
+        <Route path="/forgetpassword" element={auth?.token ? <Home /> : <ForgetPassword />} />
         <Route path="/" element={auth?.token ? <Home /> : <Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
