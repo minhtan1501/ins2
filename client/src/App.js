@@ -59,7 +59,6 @@ function App() {
 
   // get posts
 
-
   useEffect(() => {
     (async () => {
       try {
@@ -93,17 +92,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (auth.profile?.token && !auth.profile.isVerify) {
+    if (!Object.keys(auth.profile)?.length) return;
+    if (!auth.profile.isVerify) {
+      console.log("helo");
       return navigate("/verification", {
         state: { user: auth.profile._id, replace: true },
       });
     }
   }, [auth.profile, auth.profile?.isVerify, navigate]);
- 
-  if(auth.profile.role ==='admin'){
-    return <AdminNavigator/>
+
+  if (auth.profile.role === "admin") {
+    return <AdminNavigator />;
   }
-  
 
   return (
     <>
@@ -116,7 +116,9 @@ function App() {
         />
         <Route
           path="/verification"
-          element={auth.profile?.isVerify ? <Navigate to="/" /> : <Verification />}
+          element={
+            auth.profile?.isVerify ? <Navigate to="/" /> : <Verification />
+          }
         />
 
         <Route
